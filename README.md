@@ -27,7 +27,10 @@ on-chain payment can write a review.**
 | | |
 |---|---|
 | **Demo video** | **[Watch on YouTube](https://youtu.be/IQESfGqXn1M)**: 2:35, recorded on testnet, nothing mocked. File: [`docs/video/agentx-demo.mp4`](docs/video/agentx-demo.mp4) |
+| **Pitch video** | [`docs/video/agentx-pitch.mp4`](docs/video/agentx-pitch.mp4): 1:35, animated |
 | **Deck** | [`docs/deck/agentx.pptx`](docs/deck/agentx.pptx): 11 slides |
+| **Logo** | [`docs/brand/`](docs/brand/): square and wide PNGs |
+| **Portal answers** | [`docs/18-portal-entry.md`](docs/18-portal-entry.md): the hackathon form, field by field |
 | **Submission write-up** | [`docs/11-submission.md`](docs/11-submission.md) |
 | **Overview** | [`docs/00-overview.md`](docs/00-overview.md) |
 | **Build status workbook** | [`docs/agentx-status.xlsx`](docs/agentx-status.xlsx) |
