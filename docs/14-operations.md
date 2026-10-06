@@ -329,12 +329,12 @@ Backfill, reindex and repair procedures: [16 R3–R4](16-runbooks.md#r3-indexer-
   lockfile frozen in CI and the image. Dependabot: weekly npm (minor/patch
   grouped), GitHub Actions and Docker base image. `pnpm audit --prod
   --audit-level high` in CI; run locally 2026-09-30: no known vulnerabilities.
-- **CI** (`.github/workflows/ci.yml`, on push to `main` and every PR):
+- **CI** (`.github/workflows/ci.yml`, on push to `master` and every PR):
   - *static* — `pnpm typecheck` (sources and tests), `pnpm lint`,
     `pnpm format:check`, `check-no-secrets.mjs`, gitleaks over the full
     history, `pnpm audit --prod --audit-level high`;
-  - *test* — checks out `agentx-contracts` beside it (needs
-    `CONTRACTS_TOKEN` while that repo is private), `sync-chain-facts.mjs
+  - *test* — checks out `agentx-contracts` beside it (public, so
+    `github.token` is enough) and `agentx-docs` (for the API-doc test), `sync-chain-facts.mjs
     --check`, build, migrate, `vitest run --coverage` against a Postgres
     service with coverage floors (75/78/74/75);
   - *images* — builds api, signer, indexer from this repo alone, with the
@@ -346,7 +346,7 @@ Backfill, reindex and repair procedures: [16 R3–R4](16-runbooks.md#r3-indexer-
 - **CD:** none of our own. Railway builds and deploys on push to the tracked
   branch once connected; Vercel likewise. Nothing is pushed today (the local
   branch is ahead of `origin/main`).
-- **Release process (proposed):** merge to `main` with CI green → Railway
+- **Release process (proposed):** merge to `master` with CI green → Railway
   deploys api (migrations first), signer, indexer → `node
   scripts/check-deployment.mjs <api> <site>` → confirm `/v1/status`
   `build.commit` equals the merged commit. Details: [16 R1](16-runbooks.md#r1-deploy-and-verify).

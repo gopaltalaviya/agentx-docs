@@ -16,7 +16,7 @@ something is not yet true, it says so.
 | **Live site** | _Vercel URL, once deployed_ ([docs/13](13-deploy.md)) |
 | **Live API / status** | _Railway URL, once deployed_ — public health at `/v1/status` |
 | **Network** | Monad testnet (10143) — `TaskEscrow` v2 [`0x4feED0338761817417Fd1dDdFC8331D16AEB370D`](https://testnet.monadexplorer.com/address/0x4feED0338761817417Fd1dDdFC8331D16AEB370D); all addresses in `agentx-contracts/deployments/10143.json` |
-| **Code** | `github.com/gopaltalaviya/agentx-contracts`, `-backend`, `-interface` (MIT) |
+| **Code** | `github.com/gopaltalaviya/agentx-contracts`, `-backend`, `-interface`; docs, deck and video in `-docs` (MIT) |
 | **Security** | Not externally audited. 184 contract tests incl. fuzz and invariants, Slither and solhint in CI; see §7 |
 
 ### Run it yourself
@@ -337,7 +337,7 @@ A project about trustworthy reputation should be able to say how much of its
 own output it has verified.
 
 Every defect found during hardening is recorded in
-[`PROGRESS.md`](../PROGRESS.md) with how it was caught. Two patterns are worth
+[`PROGRESS.md`](https://github.com/gopaltalaviya/agentx-backend/blob/master/PROGRESS.md) with how it was caught. Two patterns are worth
 naming because they shaped the engineering:
 
 **A mitigation described in a comment is not a mitigation.** Five times, a
@@ -420,6 +420,7 @@ exit, which was wrong for `DISPUTED`; v2 made it true by adding
 | Contracts | `github.com/gopaltalaviya/agentx-contracts` |
 | Backend, agents, docs | `github.com/gopaltalaviya/agentx-backend` |
 | Interface | `github.com/gopaltalaviya/agentx-interface` |
+| Docs, deck, video | `github.com/gopaltalaviya/agentx-docs` |
 | Deck | [`docs/deck/agentx.pptx`](deck/agentx.pptx) |
 | Design | [`04 — How It All Works`](04-how-it-works.md), [`10 — LLM Architecture`](10-llm-architecture.md) |
 | Landscape | [`09 — Landscape`](09-landscape.md), including the ERC-8183 analysis |

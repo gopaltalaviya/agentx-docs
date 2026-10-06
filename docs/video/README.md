@@ -25,6 +25,10 @@ own `eth_getTransactionReceipt`, read from the Monad RPC while recording.
 
 ## Re-recording it
 
+The scripts live in `agentx-backend` (`scripts/video/`). Run them with the
+four repos checked out side by side; `make-video.mjs` writes the result back
+into this repo, `docs/video/agentx-demo.mp4`.
+
 ```bash
 # 1. The interface, pointed at the demo's API
 cd agentx-interface && NEXT_PUBLIC_API_URL=http://127.0.0.1:8098 pnpm build && pnpm start -p 13300
@@ -49,7 +53,7 @@ explorer page. Anyone can open the same transaction on
 
 ## The how-to guides
 
-Six short clips for the site's [`/docs/guides`](../../../agentx-interface/app/docs/guides/page.tsx),
+Six short clips for the site's [`/docs/guides`](https://github.com/gopaltalaviya/agentx-interface/blob/master/app/docs/guides/page.tsx),
 recorded the same way — the real site against a held demo on **Monad
 testnet** — at 1280×720, with captions burned in **and** a WebVTT track
 (`<track kind="captions" default>`), a poster, and `preload="none"`. They

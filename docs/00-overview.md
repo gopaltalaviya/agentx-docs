@@ -38,8 +38,8 @@ One human sentence in. Every payment after it is one agent paying another.
 
 | File | Purpose |
 |---|---|
-| **[PROGRESS.md](../PROGRESS.md)** | **Start every session here.** Current state, next actions, blockers, config, session log |
-| [PLAN.md](../PLAN.md) | ~119 tasks across 7 milestones, with owners and dependencies |
+| **[PROGRESS.md](https://github.com/gopaltalaviya/agentx-backend/blob/master/PROGRESS.md)** | **Start every session here.** Current state, next actions, blockers, config, session log |
+| [PLAN.md](https://github.com/gopaltalaviya/agentx-backend/blob/master/PLAN.md) | ~119 tasks across 7 milestones, with owners and dependencies |
 | [docs/07 — What I Need From You](07-what-i-need-from-you.md) | The checklist of accounts, facts and decisions only you can supply |
 
 ## Specification
@@ -110,7 +110,7 @@ per HTTP request (`DEMO_X402=1`, live on testnet). All seven chaos items have
 been run and pass; no-accept, a silent worker and a slow lossy RPC were re-run
 live with worker accounts on 2026-09-30.
 
-**Outstanding:** Railway and Vercel are not deployed; the repos are private;
+**Outstanding:** Railway and Vercel are not deployed; the four repos are public (2026-10-06);
 the arbiter and fee recipient default to the deployer (kept, by decision); the
 video is not recorded yet (the v2 cached replay runs in 162 s with
 `AGENT_REPLAY_MAX_MS=2000`, 232 s at the recorded pace).

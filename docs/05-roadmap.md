@@ -17,7 +17,7 @@
 
 > **This is the plan as written on 2026-09-22, kept as the plan.** Its
 > checkboxes were never ticked and its dates are the original estimates —
-> [`PROGRESS.md`](../PROGRESS.md) is the record of what actually happened, and
+> [`PROGRESS.md`](https://github.com/gopaltalaviya/agentx-backend/blob/master/PROGRESS.md) is the record of what actually happened, and
 > the two are deliberately not the same document. Reality ran roughly a week
 > ahead of these dates, and three things below turned out differently:
 >
@@ -90,7 +90,7 @@ Goal: the money layer is correct, because nothing after this can fix it.
 **Sep 25** — 🔒 **M1-00b first**: vendor the ERC-8004 reference contracts and
 **read the source** to confirm `giveFeedback()` accepts a *contract* caller.
 Everything below assumes it does; if it does not, trigger the
-[M1 fallback](../PLAN.md#m1-fallback-build-only-if-m1-00-fails) **today**, not
+[M1 fallback](https://github.com/gopaltalaviya/agentx-backend/blob/master/PLAN.md#m1-fallback-build-only-if-m1-00-fails) **today**, not
 on Sep 27. Then deploy the reference registries to testnet (M1-00c — they are
 [not deployed there](09-landscape.md#8-m1-00-verification--results-2026-09-22-on-chain)),
 and build `StakeVault`: deposit, withdraw with delay, slash, `isHireable`,
@@ -275,7 +275,7 @@ exposes.
 **Oct 13**
 - [ ] Submit with buffer — **hours, not minutes**
 - [ ] Verify every link in the submission from a logged-out browser
-- [ ] Freeze `main`; any further work goes on a branch
+- [ ] Freeze `master`; any further work goes on a branch
 
 **Submission checklist**
 
@@ -346,7 +346,7 @@ turns a hackathon project into infrastructure.
 ## 13. Daily rhythm
 
 - **Morning, 10 min:** what shipped yesterday, what ships today, what is blocked.
-- **Evening:** `main` is green and deployable. No exceptions — a broken `main`
+- **Evening:** `master` is green and deployable. No exceptions — a broken `master`
   on a 21-day project costs more than the feature that broke it.
 - **Every day from Oct 3:** run `pnpm demo` once. The day it stops working is
   the day you fix it, not the day you discover it.

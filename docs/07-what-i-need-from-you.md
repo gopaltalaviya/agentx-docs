@@ -1,12 +1,12 @@
 # 07 — What I Need From You
 
 Grouped by status. Updated 2026-10-05 against the code and
-[PROGRESS.md](../PROGRESS.md). **Nothing here blocks development any more.**
+[PROGRESS.md](https://github.com/gopaltalaviya/agentx-backend/blob/master/PROGRESS.md). **Nothing here blocks development any more.**
 The demo runs end to end on Monad testnet with a local model. What is left is
 what a *submission* needs: verified source, hosting, public repos, and two
 address decisions.
 
-Mark items done in [PROGRESS.md](../PROGRESS.md) as you complete them.
+Mark items done in [PROGRESS.md](https://github.com/gopaltalaviya/agentx-backend/blob/master/PROGRESS.md) as you complete them.
 
 ---
 
@@ -61,9 +61,10 @@ For the API, signer and indexer, which are long-running.
 The rules require *"a demo, a short write-up, and a link to the code"*.
 Decision D2 is already **yes**. This is only the act of flipping visibility on:
 
-- [ ] `agentx-contracts`
-- [ ] `agentx-backend`
-- [ ] `agentx-interface`
+- [x] `agentx-contracts`
+- [x] `agentx-backend`
+- [x] `agentx-interface`
+- [x] `agentx-docs` (new, 2026-10-06)
 
 Before you flip it: `check-no-secrets` runs in the contracts and backend CI
 (not the interface's), but a last look at each repo's history for keys is

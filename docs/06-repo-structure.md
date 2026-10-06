@@ -1,4 +1,4 @@
-# 06 — Repository Structure (3 repos)
+# 06 — Repository Structure (4 repos)
 
 **Decision (2026-09-22):** three separate repositories. Contracts are never
 part of a Vercel or Railway build.
@@ -7,6 +7,7 @@ part of a Vercel or Railway build.
 agentx-contracts     Foundry only.        Deployed by:  you, manually
 agentx-backend       pnpm monorepo.       Deployed by:  Railway
 agentx-interface     Next.js only.        Deployed by:  Vercel
+agentx-docs          specification, deck, video, submission (this repo)
 ```
 
 Why it is split this way: a Vercel or Railway build pulls the whole repo into
@@ -19,7 +20,7 @@ might get wrong.
 
 ## 1. `agentx-contracts`
 
-Private. Never connected to Vercel or Railway. No hosting provider has read
+Public since 2026-10-06. Never connected to Vercel or Railway. No hosting provider has read
 access.
 
 ```
@@ -132,7 +133,7 @@ agentx-backend/
 │   ├── db/           Drizzle schema + migrations
 │   ├── sdk/          the typed client every agent uses
 │   └── agent-core/   brains, prompts, judge, worker loop, orchestrator
-├── docs/             00..11 — the specification (moved here 2026-09-25)
+├── docs/README.md    pointer: the specification moved to agentx-docs (2026-10-06)
 ├── PLAN.md           the task plan
 ├── PROGRESS.md       the running build log
 ├── scripts/          e2e, demo, keeper-sweep, verify-indexer, verify-keystore,
@@ -143,10 +144,10 @@ agentx-backend/
 └── .github/workflows/ci.yml
 ```
 
-> **The specification lives here**, not beside the repos. Until 2026-09-25 the
-> docs, the plan and the build log were in no repository at all — the code was
-> on GitHub, the thinking behind it was on one machine in a folder named
-> `temp`. No fourth repo was created; they went into the largest existing one.
+> **The specification lives in `agentx-docs`** (since 2026-10-06). Until
+> 2026-09-25 the docs, the plan and the build log were in no repository at all;
+> they then went into this repo, and on 2026-10-06 the docs moved, history
+> included, to their own public repo. The plan and the build log stay here.
 
 Each app is a separate Railway service off the same repo, built from the one
 `Dockerfile` with a `SERVICE` build variable and a config file in
@@ -292,7 +293,7 @@ Nothing bespoke. If a tool has a documented default, we use it.
 
 | Area | Convention |
 |---|---|
-| Branching | **`main` only, direct commits.** The branch-and-PR convention below was written for a team; with one person and an assistant it added ceremony and no review, so it was dropped rather than pretended at. |
+| Branching | **`master` only, direct commits.** The branch-and-PR convention below was written for a team; with one person and an assistant it added ceremony and no review, so it was dropped rather than pretended at. |
 | Commits | [Conventional Commits](https://www.conventionalcommits.org): `feat:`, `fix:`, `chore:`, `docs:`, `test:` |
 | Versioning | Semver, tagged `v0.1.0` |
 | TS config | `strict: true`, `noUncheckedIndexedAccess: true` |
@@ -300,8 +301,8 @@ Nothing bespoke. If a tool has a documented default, we use it.
 | Solidity style | [Official Solidity style guide](https://docs.soliditylang.org/en/latest/style-guide.html), `forge fmt` |
 | NatSpec | Every external function on every contract |
 | Env | `.env.example` committed with empty values; `.env` gitignored everywhere |
-| CI | contracts: fmt, build, test, coverage, gas snapshot. backend: typecheck + secret scan always; the suite needs a Postgres service **and** the contracts checkout, so it skips rather than fails while that repo is private. interface: typecheck + build. |
-| PRs | **Not used.** 27 commits straight to `main`. The commit messages carry the reasoning a PR description would. |
+| CI | contracts: fmt, build, test, coverage, gas snapshot. backend: typecheck + secret scan always; the suite needs a Postgres service **and** the contracts checkout, and all repos are public, so `github.token` is enough. interface: typecheck + build. |
+| PRs | **Not used.** 27 commits straight to `master` (named `main` until 2026-10-06). The commit messages carry the reasoning a PR description would. |
 | Changelog | **None.** No repo has one. `PROGRESS.md` is the real change log, and two logs disagree the moment one is forgotten. |
 
 ---
