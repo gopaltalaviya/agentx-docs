@@ -1,5 +1,7 @@
 # The demo video
 
+**Watch: [youtu.be/IQESfGqXn1M](https://youtu.be/IQESfGqXn1M)** (unlisted).
+
 **[`agentx-demo.mp4`](agentx-demo.mp4)** — 2:35, 1920×1080, H.264 + silent AAC, ~21 MB.
 Poster frame: [`agentx-demo-poster.png`](agentx-demo-poster.png).
 

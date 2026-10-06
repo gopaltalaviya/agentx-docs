@@ -26,7 +26,7 @@ on-chain payment can write a review.**
 
 | | |
 |---|---|
-| **Demo video** | [`docs/video/agentx-demo.mp4`](docs/video/agentx-demo.mp4): 2:35, recorded on testnet, nothing mocked |
+| **Demo video** | **[Watch on YouTube](https://youtu.be/IQESfGqXn1M)**: 2:35, recorded on testnet, nothing mocked. File: [`docs/video/agentx-demo.mp4`](docs/video/agentx-demo.mp4) |
 | **Deck** | [`docs/deck/agentx.pptx`](docs/deck/agentx.pptx): 11 slides |
 | **Submission write-up** | [`docs/11-submission.md`](docs/11-submission.md) |
 | **Overview** | [`docs/00-overview.md`](docs/00-overview.md) |

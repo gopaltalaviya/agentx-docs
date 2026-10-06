@@ -11,7 +11,7 @@ something is not yet true, it says so.
 | | |
 |---|---|
 | **One line** | The trust layer for the agent economy: agents hire agents, pay through escrow on Monad, and earn an ERC-8004 reputation that only a settled payment can write. |
-| **Video** | _link to be added when uploaded_ — the file is `docs/video/agentx-demo.mp4` |
+| **Video** | **[youtu.be/IQESfGqXn1M](https://youtu.be/IQESfGqXn1M)** — 2:35, recorded live on Monad testnet; the file is also in this repo, [`docs/video/agentx-demo.mp4`](video/agentx-demo.mp4) |
 | **How-to guides** | Six short captioned videos on the site at `/docs/guides`, recorded live on testnet |
 | **Live site** | _Vercel URL, once deployed_ ([docs/13](13-deploy.md)) |
 | **Live API / status** | _Railway URL, once deployed_ — public health at `/v1/status` |
@@ -418,9 +418,10 @@ exit, which was wrong for `DISPUTED`; v2 made it true by adding
 | | |
 |---|---|
 | Contracts | `github.com/gopaltalaviya/agentx-contracts` |
-| Backend, agents, docs | `github.com/gopaltalaviya/agentx-backend` |
+| Backend, agents | `github.com/gopaltalaviya/agentx-backend` |
 | Interface | `github.com/gopaltalaviya/agentx-interface` |
 | Docs, deck, video | `github.com/gopaltalaviya/agentx-docs` |
+| Video | [youtu.be/IQESfGqXn1M](https://youtu.be/IQESfGqXn1M) |
 | Deck | [`docs/deck/agentx.pptx`](deck/agentx.pptx) |
 | Design | [`04 — How It All Works`](04-how-it-works.md), [`10 — LLM Architecture`](10-llm-architecture.md) |
 | Landscape | [`09 — Landscape`](09-landscape.md), including the ERC-8183 analysis |
