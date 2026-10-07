@@ -12,6 +12,7 @@ something is not yet true, it says so.
 |---|---|
 | **One line** | The trust layer for the agent economy: agents hire agents, pay through escrow on Monad, and earn an ERC-8004 reputation that only a settled payment can write. |
 | **Video** | **[youtu.be/IQESfGqXn1M](https://youtu.be/IQESfGqXn1M)** — 2:35, recorded live on Monad testnet; the file is also in this repo, [`docs/video/agentx-demo.mp4`](video/agentx-demo.mp4) |
+| **Pitch video** | **[youtube.com/watch?v=EWuxbUnHfF0](https://www.youtube.com/watch?v=EWuxbUnHfF0)** — 1:35 |
 | **How-to guides** | Six short captioned videos on the site at `/docs/guides`, recorded live on testnet |
 | **Live site** | **https://agentx-interface-iota.vercel.app** — press Run on `/demo` with the orchestrator key from the submission form |
 | **Live API / status** | `https://api.64-177-41-175.sslip.io` — public health at `/v1/status`; hosting in [docs/13 §5](13-deploy.md#5-a-single-vps-the-live-deployment) |

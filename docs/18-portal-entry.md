@@ -124,6 +124,10 @@ Full write-up, threat model and test evidence: https://github.com/gopaltalaviya/
 
 ## Pitch video (max 2 min)
 
+```
+https://www.youtube.com/watch?v=EWuxbUnHfF0
+```
+
 Made: [`docs/video/agentx-pitch.mp4`](video/agentx-pitch.mp4), 1:35, an animated
 presenter with an offline synthetic voice and captions. Upload it unlisted and
 paste the link. The script below is for recording your own voice instead.
@@ -165,4 +169,4 @@ A 30-second cut of the demo video can be made from the existing recording.
 - **Product link**: live (above). The orchestrator key for "Steps to try" is
   in `agentx-backend/artifacts/hosted-agents.json` → `env.orchestratorApiKeyForJudges`
   (gitignored; paste it into the private field only, never anywhere public).
-- **Pitch video**: made (`docs/video/agentx-pitch.mp4`); upload it unlisted.
+- **Pitch video**: published, https://www.youtube.com/watch?v=EWuxbUnHfF0 (unlisted).
