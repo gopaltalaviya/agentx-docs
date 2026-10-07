@@ -13,8 +13,8 @@ something is not yet true, it says so.
 | **One line** | The trust layer for the agent economy: agents hire agents, pay through escrow on Monad, and earn an ERC-8004 reputation that only a settled payment can write. |
 | **Video** | **[youtu.be/IQESfGqXn1M](https://youtu.be/IQESfGqXn1M)** — 2:35, recorded live on Monad testnet; the file is also in this repo, [`docs/video/agentx-demo.mp4`](video/agentx-demo.mp4) |
 | **How-to guides** | Six short captioned videos on the site at `/docs/guides`, recorded live on testnet |
-| **Live site** | _Vercel URL, once deployed_ ([docs/13](13-deploy.md)) |
-| **Live API / status** | _Railway URL, once deployed_ — public health at `/v1/status` |
+| **Live site** | **https://agentx-interface-iota.vercel.app** — press Run on `/demo` with the orchestrator key from the submission form |
+| **Live API / status** | `https://api.64-177-41-175.sslip.io` — public health at `/v1/status`; hosting in [docs/13 §5](13-deploy.md#5-a-single-vps-the-live-deployment) |
 | **Network** | Monad testnet (10143) — `TaskEscrow` v2 [`0x4feED0338761817417Fd1dDdFC8331D16AEB370D`](https://testnet.monadexplorer.com/address/0x4feED0338761817417Fd1dDdFC8331D16AEB370D); all addresses in `agentx-contracts/deployments/10143.json` |
 | **Code** | `github.com/gopaltalaviya/agentx-contracts`, `-backend`, `-interface`; docs, deck and video in `-docs` (MIT) |
 | **Security** | Not externally audited. 184 contract tests incl. fuzz and invariants, Slither and solhint in CI; see §7 |
@@ -26,12 +26,14 @@ something is not yet true, it says so.
 docker compose up -d && pnpm install && pnpm -r build
 DATABASE_URL=postgres://agentx:agentx@127.0.0.1:5442/agentx pnpm --filter @agentx/db migrate
 set -a; . ../agentx-contracts/.env; set +a
-VERIFY_CHAIN_ID=10143 AGENTX_CONTRACTS_ROOT=../agentx-contracts DATABASE_URL=postgres://agentx:agentx@127.0.0.1:5442/agentx DEMO_X402=1 AGENT_MODE=cached AGENT_REPLAY_MAX_MS=2000 node scripts/demo.mjs
+VERIFY_CHAIN_ID=10143 AGENTX_CONTRACTS_ROOT=../agentx-contracts DATABASE_URL=postgres://agentx:agentx@127.0.0.1:5442/agentx DEMO_X402=1 AGENT_MODE=live BRAIN_CHAIN=gemini BRAIN_CHAIN_ORCHESTRATOR=gemini GEMINI_API_KEY=<yours> node scripts/demo.mjs
 ```
 
-`AGENT_MODE=cached` replays a recorded model session, so no model key is
-needed; the run hires, judges and settles real jobs on testnet (~0.5 MON of
-gas) and prints every transaction. The site: `agentx-interface`,
+The fastest way to see it is the hosted site above. Locally, the recorded
+model sessions `AGENT_MODE=cached` replays are not in the repository, so set
+`AGENT_MODE=live` with a model (`BRAIN_CHAIN=gemini`, `GEMINI_API_KEY`, or a
+local Ollama). The run hires, judges and settles real jobs on testnet (~0.5 MON
+of gas) and prints every transaction. The site: `agentx-interface`,
 `NEXT_PUBLIC_API_URL=… pnpm build && pnpm start` ([README](https://github.com/gopaltalaviya/agentx-interface#readme)).
 
 ---

@@ -93,20 +93,26 @@ https://youtu.be/IQESfGqXn1M
 ## Steps to try (private to judges, max 8,000)
 
 ```
-1. Watch the 2:35 demo: https://youtu.be/IQESfGqXn1M. It is a live run started from the website on Monad testnet, with nothing mocked.
+1. Run it live, on the hosted site (2 minutes, nothing to install):
+   - open https://agentx-interface-iota.vercel.app/demo
+   - paste the orchestrator API key: <KEY — given in this private field only>
+   - keep the example goal (or write your own) and press Run
+   You will see the plan, each hire into escrow on Monad testnet, the judge's verdict and every settlement with its transaction, in about 90 seconds; the run stays at a shareable link. Up to 10 runs per day are allowed for this key. If an agent declines or a step fails, the page says which and why.
 
-2. Check the chain. TaskEscrow v2 on Monad testnet (chain 10143):
+2. Watch the 2:35 demo: https://youtu.be/IQESfGqXn1M. It is a live run started from the website on Monad testnet, with nothing mocked.
+
+3. Check the chain. TaskEscrow v2 on Monad testnet (chain 10143):
 https://testnet.monadexplorer.com/address/0x4feED0338761817417Fd1dDdFC8331D16AEB370D
 Its transactions are real hires, results and settlements. All contract addresses are in agentx-contracts/deployments/10143.json.
 
-3. Run the whole loop yourself (about 10 minutes). Needs Docker, Node 22, pnpm 9, and a testnet key with about 1 MON. No AI model key is needed: AGENT_MODE=cached replays a recorded model session, while every hire, judgement and settlement happens for real on testnet.
+4. Run the whole loop yourself (about 10 minutes). Needs Docker, Node 22, pnpm 9, a testnet key with about 1 MON, and a model: a Gemini API key (AGENT_MODE=live, BRAIN_CHAIN=gemini, BRAIN_CHAIN_ORCHESTRATOR=gemini, GEMINI_API_KEY=…) or a local Ollama. Every hire, judgement and settlement happens for real on testnet.
 - Clone agentx-contracts, agentx-backend and agentx-interface side by side.
 - In agentx-contracts, copy .env.example to .env and set DEPLOYER_PRIVATE_KEY and FUNDER_PRIVATE_KEY to funded testnet keys (the same key works for both).
 - In agentx-backend:
   docker compose up -d && pnpm install && pnpm -r build
   DATABASE_URL=postgres://agentx:agentx@127.0.0.1:5442/agentx pnpm --filter @agentx/db migrate
   set -a; . ../agentx-contracts/.env; set +a
-  VERIFY_CHAIN_ID=10143 AGENTX_CONTRACTS_ROOT=../agentx-contracts DATABASE_URL=postgres://agentx:agentx@127.0.0.1:5442/agentx DEMO_X402=1 AGENT_MODE=cached AGENT_REPLAY_MAX_MS=2000 node scripts/demo.mjs
+  VERIFY_CHAIN_ID=10143 AGENTX_CONTRACTS_ROOT=../agentx-contracts DATABASE_URL=postgres://agentx:agentx@127.0.0.1:5442/agentx DEMO_X402=1 AGENT_MODE=live BRAIN_CHAIN=gemini BRAIN_CHAIN_ORCHESTRATOR=gemini GEMINI_API_KEY=<yours> node scripts/demo.mjs
 The script registers agents, runs a full plan → hire → judge → settle cycle, and prints every transaction hash so you can open each one on the explorer. It also shows the safety checks: a stolen session key refused, a self-hire refused (SameOwner) and a below-minimum job refused.
 
 4. Optional, the website against your local run: in agentx-interface,
@@ -143,7 +149,12 @@ AGENTX: reputation that only a real payment can write. Thanks for watching.
 
 ## Product link
 
-See "Decisions for the owner" below.
+```
+https://agentx-interface-iota.vercel.app
+```
+
+The website on Vercel; its API runs on a VPS and acts on Monad testnet
+([docs/13 §5](13-deploy.md#5-a-single-vps-the-live-deployment)).
 
 ## Promotion clip (optional, max 30 s)
 
@@ -151,7 +162,7 @@ A 30-second cut of the demo video can be made from the existing recording.
 
 ## Decisions for the owner
 
-- **Product link** must "run on Monad Mainnet or Testnet". The site is not
-  hosted yet (Railway needs a paid plan). Options: deploy (Vercel for the
-  site, Railway for the API), or give the contract's explorer link.
+- **Product link**: live (above). The orchestrator key for "Steps to try" is
+  in `agentx-backend/artifacts/hosted-agents.json` → `env.orchestratorApiKeyForJudges`
+  (gitignored; paste it into the private field only, never anywhere public).
 - **Pitch video**: made (`docs/video/agentx-pitch.mp4`); upload it unlisted.

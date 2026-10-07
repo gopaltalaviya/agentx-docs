@@ -1,5 +1,8 @@
 # 13 — Deploying AGENTX: Railway + Vercel
 
+> **Live today (2026-10-07): one VPS + Vercel — see [§5](#5-a-single-vps-the-live-deployment).**
+> Railway needed a paid plan; the same images run on one 2 vCPU / 4 GB server.
+
 The whole hosted deployment, step by step. Everything here was rehearsed on
 2026-09-30 against the same production images, built the way Railway builds
 them (one repo, no sibling checkout), with the signer bound the way Railway's
@@ -228,3 +231,38 @@ docker compose -f docker-compose.full.yml --profile hosted up -d
 | Vercel | hobby tier is enough |
 | Testnet MON | every hire, accept, submit and settle pays gas from the agents' wallets; ~0.5 MON per full demo run |
 | Model | every hosted run calls the model — the one cost that is real money |
+
+## 5. A single VPS (the live deployment)
+
+The site is on Vercel; the backend runs on one Ubuntu server (Vultr,
+2 vCPU / 4 GB — 1 GB was too little: the status probes timed out under swap).
+The files are in `agentx-backend/deploy/vps/`:
+
+| File | What it does |
+|---|---|
+| `bootstrap-ubuntu.sh` | ufw (22, 80, 443 only), Docker, 2 GB swap, automatic security updates |
+| `docker-compose.vps.yml` | on top of `docker-compose.full.yml`: Postgres and the API publish **no** port; Caddy alone listens on 80/443 |
+| `Caddyfile` | HTTPS for the API, Let's Encrypt, SSE passed through unbuffered |
+
+The API's name is free: `api.<ip-with-dashes>.sslip.io` resolves to the server,
+so Caddy can obtain a real certificate without a domain.
+
+```bash
+# on this machine: images are built here and loaded there — the server builds nothing
+docker compose -f docker-compose.full.yml --profile hosted build
+docker save $(docker images --format '{{.Repository}}' | grep agentx-full) postgres:16-alpine caddy:2-alpine | gzip > images.tar.gz
+# on the server, in ~/agentx with .env (SIGNER_TOKEN, API_HOST, CORS_ORIGINS, the
+# §3b variables), docker-compose.full.yml, docker-compose.vps.yml and Caddyfile:
+gunzip -c images.tar.gz | docker load
+docker compose -f docker-compose.full.yml -f docker-compose.vps.yml --profile hosted up -d --no-build
+```
+
+Then on Vercel set `NEXT_PUBLIC_API_URL=https://api.<ip>.sslip.io` and
+**redeploy** (it is read at build time), and run §3. SSH is key-only
+(`PasswordAuthentication no`). A move between servers is `pg_dump -Fc` from the
+old database into a fresh one before the services start; the indexer keeps its
+cursor and catches up.
+
+Live run checks (2026-10-07): 16/16 deployment checks, status `operational`
+throughout, and three runs from the site with the example goal settled 2/2 each
+(88–91 s).

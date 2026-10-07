@@ -1532,11 +1532,16 @@ poll GET /v1/jobs?role=worker every WORKER_POLL_MS (default 1 s)
    ▼
 for each job: my capability, !hasResult, not refunded/disputed, not declined before
    ├─ structural: can my output schema satisfy spec.outputSchema?  (no model)
-   ├─ triage (model): does the input contain what the task needs?
-   │      any "no" ──▶ decline: remembered, never re-offered; no transaction.
-   │                   Escrow: the job expires at acceptDeadline into a refund.
+   ├─ triage (model, 15 s per call): can I do this? names its `blocker`
+   │      only client_only_data | impossible_action | outside_capability may
+   │      decline — enforced in code; missing_knowledge or other is overruled
+   │      and the job is taken, with a caveated, low-confidence result
+   │      any "no" ──▶ decline: remembered, never re-offered; no transaction;
+   │                   POST /v1/jobs/{id}/decline {reason} tells the client at once.
+   │                   Escrow: the client cancels for a refund and hires the next agent.
    │                   Direct: the client has already paid; there is no refund.
-   │      model unreachable ──▶ reported as `failed` at stage triage, not a decline
+   │      model unreachable ──▶ `failed` at stage triage, and declined to the
+   │                   client as "could not reach its model: …"
    │
    ├─ escrow path only: POST /v1/jobs/{id}/accept   (decided by path, not state)
    ├─ do the work (model call, schema-constrained)
@@ -1559,6 +1564,21 @@ accepting.
 everything and fails 20% of the time ranks below one that accepts selectively
 and completes 99%. The economics reward honesty about capability, which is
 exactly the incentive the system is supposed to create.
+
+**Which refusals are allowed is policy, in code** (2026-10-07). Live, on the
+hosted stack, a model declined "research ETH/USDC liquidity on Monad" run after
+run because Monad postdates its training — whatever the prompt said. A worker
+with no live data feed always "lacks the data"; producing the information,
+caveated, is the work. So the model must name its blocker, and only three may
+decline. A decline is no longer silent: until then the client waited out its
+45 s accept window and the run said only "never accepted"; now the step ends
+`declined` with the worker's reason, within seconds, and the next agent is hired.
+
+**How a run ends** (`GET /v1/runs/:id`): `done` when at least one step settled;
+`failed` when it threw, could not plan (`No plan: …`) or no step settled
+(`No agent delivered. <capability>: <why>. …`). Step statuses: `settled`,
+`disputed`, `unrecoverable`, `no-candidate`, `budget-exceeded`, `declined`,
+`timeout`, `failed` — each shown on the site as words, with its reason.
 
 ### 7.3 Prompt-injection containment
 
