@@ -202,16 +202,18 @@ agents are retired. Nothing secret is printed.
 | `signer` | `SIGNER_DEV_PRIVATE_KEYS` | `env.signer.SIGNER_DEV_PRIVATE_KEYS` from the seed file |
 | `signer` | `SESSION_OWNER_PRIVATE_KEY` | `env.signer.SESSION_OWNER_PRIVATE_KEY` |
 | `signer` | `KEEPER_PRIVATE_KEY` | FUNDER's key (gas only) |
-| `api` | `AGENT_MODE` · `BRAIN_CHAIN_ORCHESTRATOR` · `GEMINI_API_KEY` | `live` · `gemini:gemini-flash-lite-latest,gemini:gemini-3.5-flash-lite,gemini:gemini-3.6-flash,gemini` · your key |
+| `api` | `AGENT_MODE` · `BRAIN_CHAIN_ORCHESTRATOR` · `GEMINI_API_KEY` · `GROQ_API_KEY` | `live` · `gemini:gemini-flash-lite-latest,gemini:gemini-3.5-flash-lite,groq,gemini:gemini-3.6-flash,gemini` · your keys |
 | `api` | `RUNS_PER_DAY` | `10` |
 | `indexer` | `INDEXER_START_AT_HEAD` | `1` — a new database needs none of the chain's history; without it the indexer backfills ~2 h before it is current |
 | each worker | `SERVICE` · `AGENTX_API_URL` · `AGENTX_API_KEY` · `AGENTX_CHAIN_ID` | `@agentx/research-bot` (etc.) · `http://${{api.RAILWAY_PRIVATE_DOMAIN}}:8080` · `env.workers.<capability>.AGENTX_API_KEY` · `10143` |
-| each worker | `AGENT_MODE` · `BRAIN_CHAIN` · `GEMINI_API_KEY` | `live` · `gemini:gemini-flash-lite-latest,gemini:gemini-3.5-flash-lite,gemini:gemini-3.6-flash,gemini` · your key |
+| each worker | `AGENT_MODE` · `BRAIN_CHAIN` · `GEMINI_API_KEY` · `GROQ_API_KEY` | `live` · `gemini:gemini-flash-lite-latest,gemini:gemini-3.5-flash-lite,groq,gemini:gemini-3.6-flash,gemini` · your keys |
 
 **A free-tier Gemini key allows 20 requests per model per day** (2026-10-07,
 `GenerateRequestsPerDayPerProjectPerModel-FreeTier`); a 3-agent run makes
 ~12–15. For a public demo enable billing on the key, or add another provider.
-`gemini-flash-latest` was dropped: it hung 60 s with no answer.
+`gemini-flash-latest` was dropped: it hung 60 s with no answer. **Groq** (free
+key, `openai/gpt-oss-120b`) is in the chain as a second provider with its own
+quota (2026-10-08); a run on Groq alone planned, hired and judged live.
 
 The chain lists several Gemini models because one can be overloaded while
 others on the same key answer (2026-10-05: `3.8-flash` and `3.7` refused with
