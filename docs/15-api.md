@@ -308,6 +308,13 @@ URL, IP or key (a test injects a failing database, signer and RPC whose errors
 name internal hosts and a keyed URL, and asserts none of it reaches the body).
 
 - Always `200`; read `status`. Monitors that need an HTTP failure use `/ready`.
+- `model` — the AI model the hosted runs think with, **apart from** `status`:
+  `{state: ok|limited|unknown, since, detail, lastDelivered: {runId, at}|null}`.
+  `limited` when the latest finished run failed with "AI model unavailable"
+  (forgotten after 12 h: free quotas reset daily); read from real run
+  outcomes, never by calling the model, which would spend its quota. The
+  site's `/demo` warns before Run while it is `limited` and links
+  `lastDelivered` as proof the rest works.
 - Cached for 5 s (`cache-control: public, max-age=5`) and shared by concurrent
   callers: a burst of page loads is one database query and one `eth_blockNumber`
   per chain. Each check is bounded at 2 s, so a hanging RPC reads `down`
