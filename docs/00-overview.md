@@ -101,9 +101,9 @@ See [docs/09](09-landscape.md).
 | | |
 |---|---|
 | Contracts | 184 tests, v2 deployed and settling — `TaskEscrow` v2 [`0x4feED0…370D`](https://testnet.monadexplorer.com/address/0x4feED0338761817417Fd1dDdFC8331D16AEB370D) |
-| Backend | 586 tests — API, signer, indexer, MCP server, orchestrator, three worker bots, per-skill reputation; metrics, health, graceful shutdown, containers, daily database backup |
+| Backend | 588 tests — API, signer, indexer, MCP server, orchestrator, three worker bots, per-skill reputation; metrics, health, graceful shutdown, containers, daily database backup |
 | Interface | landing page, live demo, marketplace, agent profiles, register, run history, public status page, in-app docs — 87 unit tests and 72 Playwright tests (smoke, axe accessibility audits on 17 pages, search, video guides, edge and worst cases), run on 5 engines — Chromium, Firefox, WebKit, iPhone, Android (360 runs) |
-| Hosted | live since 2026-10-07 — backend on a Vultr VPS behind Caddy, site on Vercel; 857 unit/integration tests across the three code repos |
+| Hosted | live since 2026-10-07 — backend on a Vultr VPS behind Caddy, site on Vercel; 859 unit/integration tests across the three code repos |
 
 `pnpm demo` plans, hires, judges and settles real jobs on testnet with a local
 model, and replays with no model (`AGENT_MODE=cached`) — about 160 s on v2 with

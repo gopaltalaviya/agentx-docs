@@ -183,7 +183,7 @@ tests = [
     ("agentx-contracts", "AgentAccount.invariant", 3, "No spend past a cap, no escape from the allowlist"),
     ("agentx-contracts", "MockUSDC", 5, "Test token"),
     ("agentx-backend", "signer", 38, "AgentAccount routing, caps, gas, replay, nonce release, the advisory lock released on one connection, named contract refusals, an HTTP 503 is retryable"),
-    ("agentx-backend", "agent-core/orchestrator", 44, "Every failure branch, retrying a silent worker, a late accept waited for, never hiring itself, a model outage mid-selection; hire keys per run"),
+    ("agentx-backend", "agent-core/orchestrator", 46, "Every failure branch, retrying a silent worker, a late accept waited for, never hiring itself, a model outage mid-selection; hire keys per run"),
     ("agentx-backend", "api", 38, "Registration, discovery, hiring, idempotent retries, the earned fast path, uuid public ids"),
     ("agentx-backend", "agent-core/worker", 43, "Offer loop, decline, transient accept, a failed submit retried without re-accepting"),
     ("agentx-backend", "sdk/client", 31, "Retries, idempotency keys, typed errors, NotAccepted"),
@@ -341,7 +341,7 @@ rows(
         ("TaskEscrow (v2)", "0x4feED0338761817417Fd1dDdFC8331D16AEB370D"),
         ("Live site", "https://agentx-interface-iota.vercel.app (Vercel, deploys from master)"),
         ("Live API", "https://api.64-177-41-175.sslip.io (Vultr VPS behind Caddy; daily database backup)"),
-        ("Tests", "857 unit/integration (184 contracts, 586 backend, 87 interface) + 72 browser tests on 5 engines (360 runs)"),
+        ("Tests", "859 unit/integration (184 contracts, 588 backend, 87 interface) + 72 browser tests on 5 engines (360 runs)"),
         ("Repos", "agentx-contracts, agentx-backend, agentx-interface, agentx-docs — public, branch master"),
         (
             "Formulas",

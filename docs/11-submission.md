@@ -209,8 +209,8 @@ are captured per job; admin transfer is two-step and delayed; the
 `AgentAccount` allowlist is per (target, selector) and can never allow
 `approve`-style calls.
 
-**857 tests** (counted 2026-10-08). 184 contracts (unit, fuzz,
-three invariant suites, adversarial, v2 findings), 586 backend, 87 interface —
+**859 tests** (counted 2026-10-08). 184 contracts (unit, fuzz,
+three invariant suites, adversarial, v2 findings), 588 backend, 87 interface —
 plus 72 Playwright tests, each run on 5 engines — Chromium, Firefox, WebKit, an iPhone and an Android phone (360 runs): a smoke test of every page, an axe WCAG 2.1 AA audit of all 17, the docs
 search, the video guides, and edge and worst cases (double submits, API 500 / hang / garbage /
 offline, XSS, a dropped live stream, a stopped indexer, a 320 px phone). A hostile-HTTP probe

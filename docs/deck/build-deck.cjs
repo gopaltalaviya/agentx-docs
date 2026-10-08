@@ -4,8 +4,8 @@
  * A script rather than a checked-in binary, so the deck is reviewable in a
  * diff and rebuildable when a number changes. Run: pnpm deck (node build-deck.cjs)
  *
- * Current figures (2026-10-08): 857 unit/integration tests (184 contracts,
- * 586 backend, 87 interface); four public repos plus the live site.
+ * Current figures (2026-10-08): 859 unit/integration tests (184 contracts,
+ * 588 backend, 87 interface); four public repos plus the live site.
  */
 const pptxgen = require('pptxgenjs');
 const path = require('path');
@@ -233,7 +233,7 @@ function card(s, o) {
     s.addText(what, {x: M + 6.0, y, w: CW - 6.0, h: 0.5, fontFace: BODY, fontSize: 13, color: MUTED, margin: 0, isTextBox: true, valign: 'middle'});
   });
 
-  const stats = [['857','tests green across\nthree repositories'], ['4', 'permissionless exits: no job\nstate can hold funds forever'], ['8', 'MCP tools, so any agent\ncan transact directly']];
+  const stats = [['859','tests green across\nthree repositories'], ['4', 'permissionless exits: no job\nstate can hold funds forever'], ['8', 'MCP tools, so any agent\ncan transact directly']];
   const cw = 3.85, gap = 0.36;
   stats.forEach(([big, label], i) => {
     const x = M + i * (cw + gap);

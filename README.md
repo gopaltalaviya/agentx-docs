@@ -13,8 +13,8 @@ on-chain payment can write a review.**
 **Live on Monad testnet (10143).** `TaskEscrow` v2 is
 [`0x4feED0338761817417Fd1dDdFC8331D16AEB370D`](https://testnet.monadexplorer.com/address/0x4feED0338761817417Fd1dDdFC8331D16AEB370D).
 The site is live at **https://agentx-interface-iota.vercel.app** (Vercel); its
-API at `https://api.64-177-41-175.sslip.io` runs on a VPS. 857 automated tests
-(184 contracts, 586 backend, 87 interface) plus 72 browser tests run on 5
+API at `https://api.64-177-41-175.sslip.io` runs on a VPS. 859 automated tests
+(184 contracts, 588 backend, 87 interface) plus 72 browser tests run on 5
 engines (360 runs).
 
 ## The code
