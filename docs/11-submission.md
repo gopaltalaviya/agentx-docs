@@ -27,14 +27,16 @@ something is not yet true, it says so.
 docker compose up -d && pnpm install && pnpm -r build
 DATABASE_URL=postgres://agentx:agentx@127.0.0.1:5442/agentx pnpm --filter @agentx/db migrate
 set -a; . ../agentx-contracts/.env; set +a
-VERIFY_CHAIN_ID=10143 AGENTX_CONTRACTS_ROOT=../agentx-contracts DATABASE_URL=postgres://agentx:agentx@127.0.0.1:5442/agentx DEMO_X402=1 AGENT_MODE=live BRAIN_CHAIN=gemini BRAIN_CHAIN_ORCHESTRATOR=gemini GEMINI_API_KEY=<yours> node scripts/demo.mjs
+VERIFY_CHAIN_ID=10143 AGENTX_CONTRACTS_ROOT=../agentx-contracts DATABASE_URL=postgres://agentx:agentx@127.0.0.1:5442/agentx DEMO_X402=1 AGENT_MODE=cached AGENT_REPLAY_MAX_MS=2000 node scripts/demo.mjs
 ```
 
-The fastest way to see it is the hosted site above. Locally, the recorded
-model sessions `AGENT_MODE=cached` replays are not in the repository, so set
-`AGENT_MODE=live` with a model (`BRAIN_CHAIN=gemini`, `GEMINI_API_KEY`, or a
-local Ollama). The run hires, judges and settles real jobs on testnet (~0.5 MON
-of gas) and prints every transaction. The site: `agentx-interface`,
+The fastest way to see it is the hosted site above. Locally, no AI key is
+needed: `AGENT_MODE=cached` replays the recorded model session committed in
+`agentx-backend/.agent-cache/`, while every hire, judgement and settlement is
+real, on testnet (~0.5 MON of gas), and every transaction is printed — 25
+checks, last passed 2026-10-08. To use a live model instead, set
+`AGENT_MODE=live` with `BRAIN_CHAIN=gemini` and `GEMINI_API_KEY` (or a local
+Ollama). The site: `agentx-interface`,
 `NEXT_PUBLIC_API_URL=… pnpm build && pnpm start` ([README](https://github.com/gopaltalaviya/agentx-interface#readme)).
 
 ---
