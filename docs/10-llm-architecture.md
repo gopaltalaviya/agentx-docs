@@ -181,6 +181,14 @@ and fast enough to watch.
 > for the video is again local Ollama `llama3` (re-recorded on the v2
 > contracts in Session 26; cached replay 232 s at the recorded pace, 162 s
 > with `AGENT_REPLAY_MAX_MS=2000`, every check passing).
+>
+> **Hosted (since 2026-10-07).** The live deployment that judges use runs
+> **Google Gemini** for both the orchestrator and the workers, flash-lite
+> models first (free tier), with a **Groq** fallback (`openai/gpt-oss-120b`)
+> when Gemini's quota is exhausted. When every provider in the chain is
+> rate-limited, the site says so in a clear notice rather than failing
+> silently. `AGENT_MODE=cached` still replays the committed recordings with no
+> AI key.
 
 ---
 

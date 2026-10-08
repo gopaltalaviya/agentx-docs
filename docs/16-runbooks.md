@@ -7,14 +7,24 @@ Each runbook: **when**, **preconditions**, **steps**, **validation**,
 
 **Status of these procedures.** Steps that were run for real are marked
 ✅ *rehearsed*; everything else is derived from the code and Railway/Vercel
-documentation and has **not** been run against a hosted deployment, because
-none exists yet. Treat an unrehearsed runbook as a checklist to verify the
-first time.
+documentation and has **not** been run against the hosted deployment. Treat an
+unrehearsed runbook as a checklist to verify the first time.
 
-Conventions: `$API` is the API's public URL; `psql "$DATABASE_URL"` means a
-SQL session on the target database (on Railway: the Postgres service's
-*Connect* tab gives a public URL and a `railway connect` command). Testnet
-only — any mainnet action needs explicit confirmation first.
+**The hosted deployment (since 2026-10-07) is one Vultr VPS** running
+`docker-compose.full.yml` + `deploy/vps/docker-compose.vps.yml` behind Caddy,
+with the site on Vercel ([13 §5](13-deploy.md#5-a-single-vps-the-live-deployment)).
+Railway is no longer used (its trial expired); the Railway steps below are
+kept from the original plan, and each runbook that differs on the VPS says
+how. On the VPS, `$COMPOSE` means
+`docker compose -f docker-compose.full.yml -f docker-compose.vps.yml --profile hosted`,
+run in `~/agentx` on the server.
+
+Conventions: `$API` is the API's public URL (live:
+`https://api.64-177-41-175.sslip.io`); `psql "$DATABASE_URL"` means a
+SQL session on the target database (on the VPS:
+`docker exec -it agentx-full-postgres-1 psql -U agentx agentx`; on Railway: the
+Postgres service's *Connect* tab). Testnet only — any mainnet action needs
+explicit confirmation first.
 
 | # | Runbook |
 |---|---|
@@ -49,6 +59,13 @@ any new migration is additive ([14 §7](14-operations.md#7-database-and-migratio
 3. Vercel rebuilds the interface. If `NEXT_PUBLIC_API_URL` changed, this
    rebuild is required — it is read at build time.
 
+**On the VPS** (the live deployment), steps 1–2 are instead: build the images
+locally, load them on the server, `$COMPOSE up -d --no-build`
+([13 §5](13-deploy.md#5-a-single-vps-the-live-deployment)). The one-shot
+`migrate` service runs first; the signer and indexer start only after it
+succeeds, and the api after the signer is healthy. Vercel still deploys the
+site from the interface's `master` on push.
+
 **Validation** ✅ *rehearsed against local production images (2026-09-30)*
 
 ```bash
@@ -71,10 +88,25 @@ curl -s "$API/health"          # chains[].escrow = chain/deployments/<id>.json T
 2. Restart the Postgres service if it crashed. The api, signer and indexer
    reconnect by themselves (pooled `postgres.js`); restart them only if
    `/ready` stays 503 after the database is up.
-3. If the data is lost or corrupt: restore from a Railway backup (Postgres
-   service → *Backups* → restore, which stages a new volume for review), then
-   redeploy the api so migrations run against it. **Only possible if backups
-   were enabled** ([14 §8](14-operations.md#8-backup-and-disaster-recovery)).
+   On the VPS: `$COMPOSE ps` and `docker compose logs postgres`; check disk
+   space with `df -h`.
+3. If the data is lost or corrupt: restore the latest daily backup
+   ([14 §8](14-operations.md#8-backup-and-disaster-recovery)). On the VPS ✅
+   *rehearsed 2026-10-08* (into a throwaway container; row counts matched
+   live) — dumps are in `~/agentx/backups/`, written by `deploy/vps/backup.sh`
+   at 03:00 UTC, 7 kept:
+
+   Restore into a fresh database before the services start:
+
+   ```bash
+   docker compose -f docker-compose.full.yml -f docker-compose.vps.yml up -d postgres
+   docker exec -i agentx-full-postgres-1 pg_restore -U agentx -d agentx --no-owner < backups/agentx-YYYYMMDD-HHMM.dump
+   $COMPOSE up -d --no-build                       # migrate runs first, then the services
+   ```
+
+   Full steps: `deploy/vps/README.md` in `agentx-backend`. Anything written
+   after the dump (at most a day) is lost; see 14 §8 for what can and cannot
+   be rebuilt from the chain.
 4. After a restore, the indexer's cursor is as old as the backup: it re-reads
    from there, idempotently, and catches up (R3).
 
@@ -210,7 +242,9 @@ rehearsing this without an outage.
 
 ## R6. Recover a failed service
 
-**Symptom:** a service crash-loops, or a Railway health check fails.
+**Symptom:** a service crash-loops, or its health check fails (on the VPS:
+`$COMPOSE ps` shows it `unhealthy` or restarting; logs with
+`docker compose logs <service>`).
 
 1. Read the service's latest logs. Boot failures are explicit and list every
    problem at once:
@@ -220,17 +254,21 @@ rehearsing this without an outage.
    - `CORS_ORIGINS is required when NODE_ENV=production` (api).
    - `SIGNER_HOST=… without SIGNER_TOKEN` (signer refuses to expose itself).
    - `unhandled promise rejection` / `uncaught exception` — the process shuts
-     down deliberately (exit 1) and Railway restarts it (`ON_FAILURE`, up to
-     10 retries).
+     down deliberately (exit 1) and Docker restarts it
+     (`restart: unless-stopped`; on Railway, `ON_FAILURE`, up to 10 retries).
 2. Fix the variable/config and redeploy; or roll back (R7) if a new release
    caused it.
-3. **Restart** a healthy-but-stuck service: Railway → service → *Restart*.
+3. **Restart** a healthy-but-stuck service: on the VPS,
+   `$COMPOSE restart <service>`; on Railway, service → *Restart*.
    Shutdown is graceful: SIGTERM stops accepting, ends SSE streams (clients
    reconnect in 3 s), drains in-flight requests, closes pools, within 10 s.
 
 **Validation:** `/ready` 200; `/v1/status` operational.
 
 ## R7. Roll back a deploy
+
+**Backend (VPS, live):** load the previous commit's images and
+`$COMPOSE up -d --no-build`. The same additive-migration rule below applies.
 
 **Backend (Railway):** service → *Deployments* → the previous successful
 deployment → *Redeploy* (per service: api, signer, indexer). Safe for the
@@ -269,7 +307,7 @@ records names.
 
 ## R9. Rotate secrets and keys
 
-Every secret lives in Railway variables (hosted) or `.env` (local); never in
+Every secret lives in the server's `.env` (hosted, on the VPS) or `.env` (local); never in
 a commit, a log or chat. After any rotation: redeploy the affected services,
 then R1's validation.
 
@@ -280,7 +318,7 @@ then R1's validation.
 | `KEEPER_PRIVATE_KEY` | signer | new key, **fund it with MON**, update, redeploy; drain the old one | none; if unfunded, `keeper_exits_total{outcome="failed"}` rises |
 | Agent signing keys (`SIGNER_DEV_PRIVATE_KEYS` / keystore) | signer | a new key is a **new wallet**: the agent's ERC-8004 registration and `walletAddress` must change with it. No tooling exists — owner decision | the agent cannot sign until re-registered |
 | Model keys (`GEMINI_API_KEY` …) | api, workers | rotate at the provider, update, redeploy | runs fail until updated |
-| `DATABASE_URL` password | Postgres service | Railway Postgres settings; services reference `${{Postgres.DATABASE_URL}}`, so redeploy them | brief connection errors |
+| `DATABASE_URL` password | Postgres service | on the VPS it is set in `docker-compose.full.yml`, and Postgres publishes no port (reachable only on the compose network). On Railway: Postgres settings; services reference `${{Postgres.DATABASE_URL}}`, so redeploy them | brief connection errors |
 | Agent API keys (`ax_…`) | database | see below | the old key stops at once |
 
 **Revoke an agent API key** (no endpoint exists):

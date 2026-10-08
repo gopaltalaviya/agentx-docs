@@ -5,8 +5,12 @@ names what was checked. Legend: ✅ implemented and verified · ⚠️ partial �
 ❌ missing · 🔍 needs investigation · 🧑‍💻 owner decision.
 
 Scope: `agentx-backend`, reading `agentx-contracts` and `agentx-interface`.
-No hosted deployment exists (PROGRESS blocker B8), so nothing here was
-verified on Railway or Vercel.
+When this audit was written no hosted deployment existed (PROGRESS blocker
+B8). **Updated 2026-10-08:** the backend has been live since 2026-10-07 on one
+Vultr VPS behind Caddy (`https://api.64-177-41-175.sslip.io`), the site on
+Vercel (`https://agentx-interface-iota.vercel.app`); Railway is no longer used
+(its trial expired). The rows below that changed because of that are updated;
+the session-dated results in §15–§20 are kept as recorded.
 
 ## Checklist
 
@@ -52,13 +56,13 @@ verified on Railway or Vercel.
 | | Item | Evidence |
 |---|---|---|
 | ✅ | Migrations ordered, transactional, locked, fail closed | `packages/db/bin/migrate.mjs`; run in CI and `docker-compose.full.yml` |
-| ✅ | Migrations run before deploy | `deploy/railway/api.json` `preDeployCommand`; Railway does not proceed if it fails (Railway docs) |
+| ✅ | Migrations run before deploy | on the VPS, the one-shot `migrate` compose service; signer and indexer start only after it succeeds (`docker-compose.full.yml`). On Railway it would be `deploy/railway/api.json` `preDeployCommand` |
 | ✅ | Every migration reviewed for locking; all additive | docs/14 §7 (0005 rewrites `jobs`/`runs` — fine at current size) |
 | ⚠️ | Rollback | no down migrations; code rollback safe while migrations stay additive (docs/14 §7) |
 | ✅ | Integrity constraints in the database | `0001_constraints.sql`; `packages/db/test/constraints.test.ts` |
-| ❌ | Backups | no hosted DB yet. 🧑‍💻 enable Railway daily + weekly backups on creation |
+| ✅ | Backups | `deploy/vps/backup.sh` from cron daily at 03:00 UTC: `pg_dump -Fc`, verified with `pg_restore --list`, 7 days kept (since 2026-10-08). ⚠️ kept on the same server only |
 | ❌ | Retention policy | nothing is ever deleted. 🧑‍💻 |
-| ❌ | Restore rehearsed | never |
+| ✅ | Restore rehearsed | 2026-10-08: a dump restored into a throwaway container; row counts matched live. Steps in `deploy/vps/README.md` and docs/16 R2 |
 
 ### Indexer
 
@@ -83,7 +87,7 @@ verified on Railway or Vercel.
 | ❌ | Error tracking, dashboards, metrics scraper | none |
 | ❌ | Wallet balance monitoring (agents, keeper) | none; checked by hand before demos |
 | ✅ | Severities, process, templates | docs/14 §11 |
-| ✅ | Runbooks | docs/16, R1–R11; R1, R3, R8 rehearsed locally, the rest not |
+| ✅ | Runbooks | docs/16, R1–R11; R1, R3, R8 rehearsed locally, R2's restore on the VPS (2026-10-08), the rest not |
 
 ### Deployment, CI/CD, security
 
@@ -92,11 +96,11 @@ verified on Railway or Vercel.
 | ✅ | Images: one recipe, non-root, graceful SIGTERM | `Dockerfile`; CI asserts non-root |
 | ✅ | CI: types, lint, format, secrets, audit, tests + coverage floors, image builds | `.github/workflows/ci.yml`; coverage 78.7/81.5/77.4/78.7 vs floors 75/78/74/75 |
 | ✅ | Dependency updates | Dependabot weekly (npm, actions, docker); `pnpm audit --prod` clean 2026-09-30 |
-| ⚠️ | CD | Railway/Vercel auto-deploy once connected; no staging environment |
+| ⚠️ | CD | Vercel auto-deploys the site from `master`; the backend is deployed by hand (images loaded onto the VPS); no staging environment |
 | ✅ | Signer private, token-gated, loopback without a token | `apps/signer/src/auth.ts`; tests in `auth.test.ts` |
 | ⚠️ | Registration abuse | `POST /v1/agents` unauthenticated, only the IP rate limit |
-| 🧑‍💻 | Access / bus factor | one person holds GitHub, Railway, Vercel and every key |
-| ❌ | Hosted deployment verified | blocked on accounts (B8) |
+| 🧑‍💻 | Access / bus factor | one person holds GitHub, the VPS, Vercel and every key |
+| ✅ | Hosted deployment verified | live since 2026-10-07 (VPS + Vercel): 16/16 `check-deployment.mjs` checks, status `operational`, three runs from the site settled (docs/13 §5) |
 
 ---
 
@@ -137,10 +141,13 @@ smallest useful step is an external uptime monitor on `/v1/status` and
 `/ready`; the alert table is [14 §5](14-operations.md#5-monitoring-and-alerting).
 
 ### 7. Deployment architecture
-Railway for api, signer (private network only), indexer (one replica) and
-managed Postgres; Vercel for the interface. SSE and in-process runs rule out
-serverless for the API. Hetzner/VM via `docker-compose.full.yml` is viable
-but moves TLS, backups and patching onto the owner.
+Live (since 2026-10-07): one Vultr VPS (2 vCPU / 4 GB) running api, signer
+(compose network only, no port), indexer (one replica), the hosted
+orchestrator's three workers and Postgres via `docker-compose.full.yml` +
+`deploy/vps/docker-compose.vps.yml`, with Caddy alone on 80/443; Vercel for the
+interface. SSE and in-process runs rule out serverless for the API. The VM
+moves TLS (Caddy), backups (daily cron) and patching (automatic security
+updates) onto the owner. Railway was the original plan; it is no longer used.
 
 ### 8. Maintenance
 Runbooks R1–R11 ([docs/16](16-runbooks.md)): deploy/verify, database down,
@@ -149,8 +156,10 @@ restart, rollback, manual migrations, secret rotation, dependency updates,
 contracts redeploy.
 
 ### 9. Backup and recovery
-None exist yet. Railway backups must be enabled on the Postgres service
-(daily 6 d, weekly 27 d, monthly 89 d retention). Projections are
+Daily on the VPS since 2026-10-08: `deploy/vps/backup.sh` from cron at 03:00
+UTC, `pg_dump -Fc`, verified with `pg_restore --list`, 7 days kept; a restore
+into a throwaway container matched the live row counts. The dumps stay on the
+same server — no off-server copy yet. Projections are
 re-derivable from the chain; registrations, API keys, specs, results and run
 traces are not. [14 §8](14-operations.md#8-backup-and-disaster-recovery).
 
@@ -162,7 +171,7 @@ endpoint; unauthenticated registration; signer fetch error message passed to
 callers; per-process rate limit; single-person access. [14 §9](14-operations.md#9-security-and-access).
 
 ### 11. Missing capabilities
-Alerting, error tracking, dashboards, backups, retention, a staging
+Alerting, error tracking, dashboards, off-server backup copies, retention, a staging
 environment, OpenAPI, SSE event ids, live indexer events, key management
 endpoints, wallet balance monitoring, reindex tooling.
 
@@ -177,13 +186,16 @@ endpoints, wallet balance monitoring, reindex tooling.
   linked; `.env.example` names added.
 
 ### 13. Remaining risks
-One operator, no alerting and no backups — an outage or data loss would be
-noticed late and could not be undone. A reorg halt needs a manual SQL repair
-nobody has rehearsed. Model-provider availability decides whether hosted runs
-work at all (Gemini 503s in Session 26). Testnet MON runs out silently.
+One operator and no alerting — an outage would be noticed late. Daily backups
+bound data loss to a day, but they live on the same server as the database.
+A reorg halt needs a manual SQL repair nobody has rehearsed. Model-provider
+availability decides whether hosted runs work at all (Gemini 503s in Session
+26); the hosted chain now falls back from Gemini to Groq when Gemini's quota is
+exhausted, and the site says so when the model is rate-limited. Testnet MON
+runs out silently.
 
 ### 14. Required owner decisions
-1. Enable Railway Postgres backups (daily + weekly) when creating the database.
+1. ~~Enable Railway Postgres backups~~ — done differently: daily VPS backups by cron (2026-10-08). Open: whether to copy them off the server.
 2. Pick an uptime monitor and point it at `/v1/status` and `/ready`.
 3. Set `METRICS_TOKEN` on the API if metrics will be scraped (else none are served).
 4. Whether to tag releases (`backend-v0.x.y`) and keep a changelog.

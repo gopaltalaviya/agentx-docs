@@ -56,7 +56,7 @@ One human sentence in. Every payment after it is one agent paying another.
 | [08 — Configuration Architecture](08-configuration.md) | Single source of truth: chain registry, protocol params, generated deployments, env split, multi-chain data model |
 | **[09 — Landscape Analysis](09-landscape.md)** | **Read before writing contract code.** ERC-8004, x402, AP2, Virtuals ACP; what not to build; honest competitive positioning |
 | [12 — ERC-8183 Mapping](12-erc8183-mapping.md) | `TaskEscrow` against ERC-8183 function by function; where the spec's prose and reference contract disagree; why conformance needs a new kernel, not an adapter |
-| [13 — Deploy](13-deploy.md) | Railway + Vercel, step by step, and the deployment check |
+| [13 — Deploy](13-deploy.md) | One VPS + Vercel (the live deployment), step by step, and the deployment check |
 | [14 — Operations](14-operations.md) | Health/status endpoints, versioning, environments, monitoring and alerts, indexer lifecycle, database, backups, security, incidents |
 | [15 — HTTP API](15-api.md) | Every route, auth, errors, rate limits, idempotency, SSE, `/v1/status` — test-checked against the app |
 | [16 — Runbooks](16-runbooks.md) | Deploy, rollback, restart, migrations, reindex, RPC, secret rotation, contracts redeploy |
@@ -67,14 +67,19 @@ you are ready to write code.
 
 ## Repositories
 
-Three, deliberately. Contracts never enter a hosting provider's build
+Three code repos, deliberately, plus `agentx-docs` for this specification,
+the deck and the video. Contracts never enter a hosting provider's build
 container. See [docs/06](06-repo-structure.md).
 
 ```
 agentx-contracts    Foundry only     deployed manually by the key holder
-agentx-backend      pnpm monorepo    → Railway (api, indexer, signer, mcp, agents)
+agentx-backend      pnpm monorepo    → one VPS, Docker + Caddy (api, indexer, signer, orchestrator + workers, Postgres)
 agentx-interface    Next.js only     → Vercel
+agentx-docs         Markdown         specification, deck, video
 ```
+
+Live: site **https://agentx-interface-iota.vercel.app**, API
+**https://api.64-177-41-175.sslip.io**.
 
 ---
 
@@ -96,8 +101,9 @@ See [docs/09](09-landscape.md).
 | | |
 |---|---|
 | Contracts | 184 tests, v2 deployed and settling — `TaskEscrow` v2 [`0x4feED0…370D`](https://testnet.monadexplorer.com/address/0x4feED0338761817417Fd1dDdFC8331D16AEB370D) |
-| Backend | 528 tests — API, signer, indexer, MCP server, orchestrator, three worker bots; metrics, health, graceful shutdown, containers |
-| Interface | landing page, live demo, marketplace, agent profiles, register, run history, public status page, in-app docs — 77 unit tests and 63 Playwright tests (14 smoke, 17 axe accessibility audits, 9 search, 2 video guides, 21 edge and worst cases), also run in Firefox, WebKit and on two phones |
+| Backend | 586 tests — API, signer, indexer, MCP server, orchestrator, three worker bots, per-skill reputation; metrics, health, graceful shutdown, containers, daily database backup |
+| Interface | landing page, live demo, marketplace, agent profiles, register, run history, public status page, in-app docs — 87 unit tests and 72 Playwright tests (smoke, axe accessibility audits on 17 pages, search, video guides, edge and worst cases), run on 5 engines — Chromium, Firefox, WebKit, iPhone, Android (360 runs) |
+| Hosted | live since 2026-10-07 — backend on a Vultr VPS behind Caddy, site on Vercel; 857 unit/integration tests across the three code repos |
 
 `pnpm demo` plans, hires, judges and settles real jobs on testnet with a local
 model, and replays with no model (`AGENT_MODE=cached`) — about 160 s on v2 with
@@ -110,10 +116,10 @@ per HTTP request (`DEMO_X402=1`, live on testnet). All seven chaos items have
 been run and pass; no-accept, a silent worker and a slow lossy RPC were re-run
 live with worker accounts on 2026-09-30.
 
-**Outstanding:** Railway and Vercel are not deployed; the four repos are public (2026-10-06);
-the arbiter and fee recipient default to the deployer (kept, by decision); the
-video is not recorded yet (the v2 cached replay runs in 162 s with
-`AGENT_REPLAY_MAX_MS=2000`, 232 s at the recorded pace).
+**Outstanding:** none blocking. The backend and site are deployed (2026-10-07);
+the four repos are public (2026-10-06); the arbiter and fee recipient default
+to the deployer (kept, by decision); the video is recorded and uploaded
+(2026-10-06).
 
 **Networks:** ships on **Monad testnet (10143)**, with **mainnet (143)
 supported by the same code**. The network is configuration, never a code

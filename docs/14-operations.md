@@ -9,8 +9,14 @@ Deploying for the first time is [13 — Deploy](13-deploy.md); every variable is
 in [08 §5](08-configuration.md#5-environment-variables--secrets-and-wiring-only);
 the HTTP API is [15 — API](15-api.md).
 
-Written 2026-09-30 from the code at the commit that adds it. Nothing here
-describes a hosted deployment — none exists yet (blocker B8 in PROGRESS.md).
+Written 2026-09-30 from the code at the commit that adds it, and written
+against a planned Railway deployment. **Since 2026-10-07 the hosted
+deployment is one Vultr VPS** (Docker Compose behind Caddy, API at
+`https://api.64-177-41-175.sslip.io`) with the site on Vercel
+(`https://agentx-interface-iota.vercel.app`); Railway is no longer used (its
+trial expired). Where a section below says "Railway", read it as the original
+plan; the VPS specifics are in [13 §5](13-deploy.md#5-a-single-vps-the-live-deployment)
+and [§8](#8-backup-and-disaster-recovery).
 
 **Not applicable to AGENTX**, so not covered: Redis or any cache/queue (none —
 see `docker-compose.yml`), WebSockets (live updates are SSE), a subgraph (the
@@ -52,7 +58,7 @@ payments and reputation → the interface reads them from the API.
 | indexer | Railway service, one replica | serverless / cron | a long-running poller with backoff; two replicas would do the same work twice (safe, since writes are idempotent, but wasteful) |
 | Postgres | Railway managed Postgres | a container without a volume | state; backups are a platform feature ([§8](#8-backup-and-disaster-recovery)) |
 | interface | Vercel | — | static + SSR Next.js; `NEXT_PUBLIC_API_URL` is baked in at build |
-| Hetzner / a VM | all backend services via `docker-compose.full.yml` | — | viable and cheaper, but you then own TLS, restarts, backups and patching. Not needed for the hackathon |
+| A VM — **the live choice** (Vultr, since 2026-10-07) | all backend services via `docker-compose.full.yml` + `deploy/vps/docker-compose.vps.yml` | — | cheaper, and you own TLS (Caddy), restarts (`restart: unless-stopped`), backups (daily cron, [§8](#8-backup-and-disaster-recovery)) and patching (automatic security updates) |
 
 ## 2. Health, readiness and status
 
@@ -114,7 +120,7 @@ and nothing consumes them yet (owner decision, [17](17-production-readiness.md))
 | **local dev** | anvil 31337 or Monad testnet 10143 | docker compose Postgres on `127.0.0.1:5442` (shared; the test suite TRUNCATEs it) | `pnpm dev`, scripts | `.env` (from `.env.example`) + `agentx-contracts` checkout |
 | **local production images** | 10143 | its own Postgres on `:5443`, own volume | `docker-compose.full.yml` | shell env; chain facts from `chain/` |
 | **CI** | none (unit + integration against Postgres) | service container `:5442` | `.github/workflows/ci.yml` | contracts repo checked out beside |
-| **testnet hosted** (planned) | 10143 | Railway Postgres | Railway + Vercel, [13](13-deploy.md) | Railway variables; chain facts from `chain/` in the image |
+| **testnet hosted** (live since 2026-10-07) | 10143 | Postgres container on the VPS, own volume, daily backup | one Vultr VPS (Docker Compose, Caddy) + Vercel, [13 §5](13-deploy.md#5-a-single-vps-the-live-deployment) | the server's `.env` (never committed); chain facts from `chain/` in the image |
 | **mainnet** (future) | 143 | separate | not built | `deployments/143.json` does not exist, so `ENABLED_CHAIN_IDS=143` refuses to boot. The signer refuses raw keys and the keeper refuses to start off-testnet |
 
 **Which copy of a fact is authoritative** — the rule from docs/08, checked
@@ -127,7 +133,7 @@ across the three repos on 2026-09-30:
 | Contract addresses | `agentx-contracts/deployments/<id>.json` (generated) | `chain/deployments/` (same check); served by `/health` and `/v1/network`; `check-deployment.mjs` compares the live API with `chain/` |
 | RPC override | `RPC_URL_<chainId>` env, per service (api, signer, indexer) | must be set on each service that reads chain state; never served (`/v1/network` publishes the public URLs only) |
 | API URL | `NEXT_PUBLIC_API_URL` on Vercel (build time) | `CORS_ORIGINS` on the API must name the site; `AGENTX_API_URL` for workers |
-| Secrets | `.env` / Railway variables | none — `.env.example` has names only |
+| Secrets | `.env` (locally, and the server's `.env` on the VPS) | none — `.env.example` has names only |
 
 Deliberate duplicates in the interface, both security allowlists with an env
 override rather than config drift: the CSP's RPC origins
@@ -147,7 +153,8 @@ schema on 2026-09-30 and brought up to date (it was missing 17 names).
   redaction of `authorization`, `x-payment`, `cookie`, and any `apiKey`,
   `privateKey`, `password`, `passphrase`, `token` field
   (`packages/service/src/http.ts`). The API logs every request; the signer and
-  indexer log events and failures. Railway keeps stdout as the service log.
+  indexer log events and failures. On the VPS, Docker keeps stdout as the
+  container log (`docker compose logs <service>`).
 - **Request ids:** an incoming `x-request-id` is honoured, else a UUID; the API
   returns it as `x-trace-id` and in every problem body, and forwards it to the
   signer.
@@ -170,8 +177,8 @@ schema on 2026-09-30 and brought up to date (it was missing 17 names).
 ### What is missing
 
 No alerting, no error tracking (Sentry or similar), no dashboards, no metrics
-scraper. Railway does not scrape Prometheus endpoints; `/metrics` is only useful
-once something collects it.
+scraper. Nothing on the VPS scrapes Prometheus endpoints; `/metrics` is only
+useful once something collects it.
 
 ### What to wire up, smallest first
 
@@ -179,8 +186,9 @@ once something collects it.
    `GET /v1/status` every 1–5 min, alerting when `status != "operational"`
    (body match), and on `GET /ready` for HTTP 503. This covers the database,
    signer, RPC and indexer lag with no new infrastructure.
-2. **Railway's own deploy/crash notifications** for every service (project
-   settings).
+2. **Container health** on the VPS: every service has a compose
+   `healthcheck` and `restart: unless-stopped`; `docker compose ps` shows an
+   unhealthy one. (On Railway this would be its deploy/crash notifications.)
 3. Later: a Prometheus-compatible scraper (e.g. Grafana Cloud agent) with
    `METRICS_TOKEN`, for the alerts below that need metrics.
 
@@ -191,7 +199,7 @@ once something collects it.
 | `/v1/status` → `status: "down"` or unreachable for 2 checks | uptime monitor | SEV1 | owner | [R2](16-runbooks.md#r2-database-down), [R6](16-runbooks.md#r6-recover-a-failed-service) |
 | `components.signer == "down"` 5 min | uptime monitor | SEV2 — hires and transitions fail with 503 | owner | [R6](16-runbooks.md#r6-recover-a-failed-service) |
 | `components.indexer == "degraded"` 15 min (lag > 150 + confirmations), or `"down"` 5 min (stopped) | uptime monitor / `indexer_lag_blocks` | SEV3 (SEV2 if down) — settlements show late | owner | [R3](16-runbooks.md#r3-indexer-stopped-or-behind) |
-| indexer `/ready` 503, or log "reorg dropped … halting" | Railway health / logs | SEV2 — projection frozen | owner | [R4](16-runbooks.md#r4-indexer-halted-on-a-reorg-or-showing-wrong-data) |
+| indexer `/ready` 503, or log "reorg dropped … halting" | container health / logs | SEV2 — projection frozen | owner | [R4](16-runbooks.md#r4-indexer-halted-on-a-reorg-or-showing-wrong-data) |
 | `components.rpc == "down"` 10 min | uptime monitor | SEV2 | owner | [R5](16-runbooks.md#r5-rpc-down-or-rate-limited) |
 | `rate(signer_refusals_total{code="INTERNAL"}[10m]) > 0` | metrics | SEV3 | owner | [R6](16-runbooks.md#r6-recover-a-failed-service) |
 | `rate(http_request_duration_seconds_count{status=~"5.."}[5m])` > 1% of requests | metrics | SEV3 | owner | read logs by `traceId` |
@@ -244,9 +252,11 @@ Backfill, reindex and repair procedures: [16 R3–R4](16-runbooks.md#r3-indexer-
 - **Migrations:** plain SQL files applied in filename order by
   `packages/db/bin/migrate.mjs`, each in its own transaction, recorded in
   `_migrations`, serialised by a Postgres advisory lock. `DATABASE_URL` is
-  required (no fallback). On Railway they run as the API's
-  `preDeployCommand`; if a migration fails, Railway does not proceed with the
-  deploy, and the failed file's transaction has rolled back.
+  required (no fallback). On the VPS they run as the one-shot `migrate`
+  service, and the signer and indexer start only after it completes
+  successfully (the API waits for the signer); if a migration fails, nothing
+  starts, and the failed file's transaction has rolled back. (On Railway they
+  would run as the API's `preDeployCommand`.)
 - **Downtime review of every migration (2026-09-30):**
 
 | File | Change | Lock / risk at today's size |
@@ -281,26 +291,32 @@ Backfill, reindex and repair procedures: [16 R3–R4](16-runbooks.md#r3-indexer-
 
 ## 8. Backup and disaster recovery
 
-- **No backups exist today** — there is no hosted database yet, and the local
-  one is a dev volume the tests truncate.
-- **Railway:** backups are a per-service feature to **enable** in the Postgres
-  service's *Backups* tab: manual, or scheduled daily (kept 6 days), weekly
-  (27 days) or monthly (89 days). Restoring creates a new volume from the
-  chosen backup, in the same project and environment, and stages the change
-  for review. Wiping a volume deletes its backups. (Railway docs, read
-  2026-09-30.) **Owner action: enable daily + weekly before the demo.**
+- **Daily backups on the VPS (since 2026-10-08).** `deploy/vps/backup.sh`
+  (in `agentx-backend`) runs from cron at 03:00 UTC: `pg_dump -Fc` of the live
+  database into `~/agentx/backups/`, verified with `pg_restore --list`, 7 days
+  kept. The local database is a dev volume the tests truncate and is not
+  backed up.
+- **Restore — verified.** A dump was restored into a throwaway Postgres
+  container on 2026-10-08 and its row counts matched the live database
+  (agents, jobs, runs, API keys). Steps: `deploy/vps/README.md` in
+  `agentx-backend`, and [16 R2](16-runbooks.md#r2-database-down): bring up
+  Postgres alone, `pg_restore --no-owner` into it, then start the services;
+  the indexer keeps its cursor and catches up.
+- **Backups live on the same server.** A copy off the server is not
+  automated; losing the VPS loses its backups too.
 - **What can be rebuilt without a backup:** everything the indexer projects
   (job states, `payments`, `agent_stats`) can be re-derived from the chain for
   jobs whose rows exist. **What cannot:** agents' off-chain registrations
   (capabilities, prices, endpoints), API key hashes, job specs and results,
   run traces, the signer's nonce ledger. Losing the database means agents must
   re-register and receive new API keys.
-- **Keys** are not in the database: they are Railway variables
+- **Keys** are not in the database: they are in the server's `.env`
   (`SIGNER_DEV_PRIVATE_KEYS` or `SIGNER_KEYSTORE_JSON`, `KEEPER_PRIVATE_KEY`).
   Keep an offline copy of the keystore and passphrase; losing both loses the
   agents' wallets.
 - **Targets (proposed, owner decision):** RPO 24 h (daily backup), RTO 1 h
-  (restore + redeploy). Neither has been rehearsed.
+  (restore + redeploy). The restore itself was rehearsed on 2026-10-08; a full
+  timed recovery of the live server has not been.
 
 ## 9. Security and access
 
@@ -319,8 +335,9 @@ Backfill, reindex and repair procedures: [16 R3–R4](16-runbooks.md#r3-indexer-
   (spam registrations are possible); the API returns "the signer did not
   answer: <message>" to callers, where the message is Node's own fetch error
   (no host in it today, but not guaranteed); the rate limit is per process.
-- **Access:** GitHub (`CODEOWNERS`: owner reviews every path), Railway and
-  Vercel accounts, and `.env` on the owner's machine. One person holds all of
+- **Access:** GitHub (`CODEOWNERS`: owner reviews every path), the VPS
+  (key-only SSH) and Vercel accounts, and `.env` on the owner's machine and on
+  the server. One person holds all of
   it — a bus-factor of one, and an owner decision.
 
 ## 10. Dependencies, CI/CD and release
@@ -343,11 +360,12 @@ Backfill, reindex and repair procedures: [16 R3–R4](16-runbooks.md#r3-indexer-
   Playwright smoke against a mock API). The contracts repo has its own.
 - **Pre-commit hook** (`.githooks/pre-commit`): secret scan, prettier and
   eslint on staged files.
-- **CD:** none of our own. Railway builds and deploys on push to the tracked
-  branch once connected; Vercel likewise. Nothing is pushed today (the local
-  branch is ahead of `origin/main`).
-- **Release process (proposed):** merge to `master` with CI green → Railway
-  deploys api (migrations first), signer, indexer → `node
+- **CD:** the site: Vercel builds and deploys on every push to the
+  interface's `master`. The backend: none — images are built locally, loaded
+  onto the VPS and started with `docker compose … up -d --no-build`
+  ([13 §5](13-deploy.md#5-a-single-vps-the-live-deployment)).
+- **Release process:** merge to `master` with CI green → build and load the
+  images, `up -d` on the VPS (migrations first, then signer, indexer, api) → `node
   scripts/check-deployment.mjs <api> <site>` → confirm `/v1/status`
   `build.commit` equals the merged commit. Details: [16 R1](16-runbooks.md#r1-deploy-and-verify).
 

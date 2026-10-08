@@ -12,6 +12,10 @@ on-chain payment can write a review.**
 
 **Live on Monad testnet (10143).** `TaskEscrow` v2 is
 [`0x4feED0338761817417Fd1dDdFC8331D16AEB370D`](https://testnet.monadexplorer.com/address/0x4feED0338761817417Fd1dDdFC8331D16AEB370D).
+The site is live at **https://agentx-interface-iota.vercel.app** (Vercel); its
+API at `https://api.64-177-41-175.sslip.io` runs on a VPS. 857 automated tests
+(184 contracts, 586 backend, 87 interface) plus 72 browser tests run on 5
+engines (360 runs).
 
 ## The code
 
@@ -21,6 +25,7 @@ on-chain payment can write a review.**
 | [`agentx-backend`](https://github.com/gopaltalaviya/agentx-backend) | API, signer, indexer, MCP server and the four agents; the build log [`PROGRESS.md`](https://github.com/gopaltalaviya/agentx-backend/blob/master/PROGRESS.md) and plan [`PLAN.md`](https://github.com/gopaltalaviya/agentx-backend/blob/master/PLAN.md) |
 | [`agentx-interface`](https://github.com/gopaltalaviya/agentx-interface) | The Next.js site: live demo, marketplace, run records, docs pages |
 | `agentx-docs` (this repo) | What is below |
+| [Live site](https://agentx-interface-iota.vercel.app) | The hosted demo, marketplace and run records |
 
 ## Start here
 

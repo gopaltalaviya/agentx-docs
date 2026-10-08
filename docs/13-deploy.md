@@ -1,7 +1,11 @@
-# 13 — Deploying AGENTX: Railway + Vercel
+# 13 — Deploying AGENTX: VPS + Vercel (Railway kept as an alternative)
 
-> **Live today (2026-10-07): one VPS + Vercel — see [§5](#5-a-single-vps-the-live-deployment).**
-> Railway needed a paid plan; the same images run on one 2 vCPU / 4 GB server.
+> **Live today (since 2026-10-07): one Vultr VPS behind Caddy + Vercel — see [§5](#5-a-single-vps-the-live-deployment).**
+> API `https://api.64-177-41-175.sslip.io`, site `https://agentx-interface-iota.vercel.app`
+> (auto-deploys from `master`). Railway is no longer used — its trial expired;
+> the same images run on one 2 vCPU / 4 GB server. §1–§2 below are the
+> original Railway plan, kept for reference; §3, §3b and §5 apply to the live
+> deployment.
 
 The whole hosted deployment, step by step. Everything here was rehearsed on
 2026-09-30 against the same production images, built the way Railway builds
@@ -158,7 +162,7 @@ CORS check as it should.
 The public status summary the site's status page reads —
 `curl -s https://<api-domain>/v1/status` — should say `"status": "operational"`
 once the indexer has caught up, and `build.commit` should be the commit
-Railway deployed ([docs/14](14-operations.md), [docs/15 §4](15-api.md#4-get-v1status)).
+you deployed ([docs/14](14-operations.md), [docs/15 §4](15-api.md#4-get-v1status)).
 Operating it afterwards: [docs/16 — Runbooks](16-runbooks.md).
 
 Then one real run: on the site's home page, paste the orchestrator agent's
@@ -203,7 +207,7 @@ agents are retired. Nothing secret is printed.
 | `signer` | `SESSION_OWNER_PRIVATE_KEY` | `env.signer.SESSION_OWNER_PRIVATE_KEY` |
 | `signer` | `KEEPER_PRIVATE_KEY` | FUNDER's key (gas only) |
 | `api` | `AGENT_MODE` · `BRAIN_CHAIN_ORCHESTRATOR` · `GEMINI_API_KEY` · `GROQ_API_KEY` | `live` · `gemini:gemini-flash-lite-latest,gemini:gemini-3.5-flash-lite,groq,gemini:gemini-3.6-flash,gemini` · your keys |
-| `api` | `RUNS_PER_DAY` | `10` |
+| `api` | `RUNS_PER_DAY` | `20` (the live deployment: 20 hosted runs per day per key) |
 | `indexer` | `INDEXER_START_AT_HEAD` | `1` — a new database needs none of the chain's history; without it the indexer backfills ~2 h before it is current |
 | each worker | `SERVICE` · `AGENTX_API_URL` · `AGENTX_API_KEY` · `AGENTX_CHAIN_ID` | `@agentx/research-bot` (etc.) · `http://${{api.RAILWAY_PRIVATE_DOMAIN}}:8080` · `env.workers.<capability>.AGENTX_API_KEY` · `10143` |
 | each worker | `AGENT_MODE` · `BRAIN_CHAIN` · `GEMINI_API_KEY` · `GROQ_API_KEY` | `live` · `gemini:gemini-flash-lite-latest,gemini:gemini-3.5-flash-lite,groq,gemini:gemini-3.6-flash,gemini` · your keys |
@@ -234,7 +238,8 @@ docker compose -f docker-compose.full.yml --profile hosted up -d
 
 | | |
 |---|---|
-| Railway | 4 small services + Postgres; 7 with the hosted workers |
+| VPS (live) | one Vultr server, 2 vCPU / 4 GB, running every backend service, the hosted workers and Postgres |
+| Railway | not used (trial expired); would be 4 small services + Postgres, 7 with the hosted workers |
 | Vercel | hobby tier is enough |
 | Testnet MON | every hire, accept, submit and settle pays gas from the agents' wallets; ~0.5 MON per full demo run |
 | Model | every hosted run calls the model — the one cost that is real money |
@@ -273,3 +278,18 @@ cursor and catches up.
 Live run checks (2026-10-07): 16/16 deployment checks, status `operational`
 throughout, and three runs from the site with the example goal settled 2/2 each
 (88–91 s).
+
+The judges' hosted orchestrator pays through its `AgentAccount` with on-chain
+caps of 0.1 MockUSDC per task and 5 MockUSDC per day, and the API allows 20
+hosted runs per day per key. The hosted model chain is Gemini (flash-lite
+models first, free tier) with a Groq fallback (`openai/gpt-oss-120b`) when
+Gemini's quota is exhausted; the site shows a clear notice when the model is
+rate-limited.
+
+### Backups
+
+`deploy/vps/backup.sh` (in `agentx-backend`) runs from cron daily at 03:00 UTC:
+`pg_dump -Fc` into `~/agentx/backups/`, checked with `pg_restore --list`, 7
+days kept. A restore into a throwaway container was verified on 2026-10-08 —
+row counts matched the live database. Restore steps:
+`agentx-backend/deploy/vps/README.md` and [docs/16](16-runbooks.md).

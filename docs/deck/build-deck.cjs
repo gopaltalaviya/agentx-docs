@@ -2,7 +2,10 @@
  * Builds docs/deck/agentx.pptx — the Monad Metropolis submission deck.
  *
  * A script rather than a checked-in binary, so the deck is reviewable in a
- * diff and rebuildable when a number changes. Run: node build-deck.js
+ * diff and rebuildable when a number changes. Run: pnpm deck (node build-deck.cjs)
+ *
+ * Current figures (2026-10-08): 857 unit/integration tests (184 contracts,
+ * 586 backend, 87 interface); four public repos plus the live site.
  */
 const pptxgen = require('pptxgenjs');
 const path = require('path');
@@ -230,7 +233,7 @@ function card(s, o) {
     s.addText(what, {x: M + 6.0, y, w: CW - 6.0, h: 0.5, fontFace: BODY, fontSize: 13, color: MUTED, margin: 0, isTextBox: true, valign: 'middle'});
   });
 
-  const stats = [['789','tests green across\nthree repositories'], ['4', 'permissionless exits: no job\nstate can hold funds forever'], ['8', 'MCP tools, so any agent\ncan transact directly']];
+  const stats = [['857','tests green across\nthree repositories'], ['4', 'permissionless exits: no job\nstate can hold funds forever'], ['8', 'MCP tools, so any agent\ncan transact directly']];
   const cw = 3.85, gap = 0.36;
   stats.forEach(([big, label], i) => {
     const x = M + i * (cw + gap);
@@ -409,7 +412,7 @@ function card(s, o) {
 
 // ── 10. close ─────────────────────────────────────────────────────────────
 {
-  const s = slide('Close on the one line. The repo links go public on 13 October, which the submission requires.');
+  const s = slide('Close on the one line. All four repos are public (since 6 October) and the site is live, as the submission requires.');
   s.addText('Reputation that costs\nwhat the work cost.', {
     x: M, y: 1.35, w: 11.4, h: 1.8, fontFace: HEAD, fontSize: 42, bold: true, color: TEXT,
     lineSpacing: 50, margin: 0, isTextBox: true,
@@ -419,18 +422,24 @@ function card(s, o) {
     {x: M, y: 3.3, w: 11.0, h: 1.0, fontFace: BODY, fontSize: 16, color: MUTED, margin: 0, isTextBox: true},
   );
 
+  // Four public repos in a row, the live site in a full-width card below.
   const repos = [
-    ['Contracts', 'github.com/gopaltalaviya/agentx-contracts'],
-    ['Backend & agents', 'github.com/gopaltalaviya/agentx-backend'],
-    ['Interface', 'github.com/gopaltalaviya/agentx-interface'],
+    ['Contracts', 'github.com/gopaltalaviya/\nagentx-contracts'],
+    ['Backend & agents', 'github.com/gopaltalaviya/\nagentx-backend'],
+    ['Interface', 'github.com/gopaltalaviya/\nagentx-interface'],
+    ['Docs, deck & video', 'github.com/gopaltalaviya/\nagentx-docs'],
   ];
-  const cw = 3.85, gap = 0.36;
+  const gap = 0.3, cw = (CW - gap * 3) / 4;
   repos.forEach(([label, url], i) => {
     const x = M + i * (cw + gap);
-    card(s, {x, y: 4.6, w: cw, h: 1.15});
-    s.addText(label, {x: x + 0.28, y: 4.75, w: cw - 0.56, h: 0.3, fontFace: BODY, fontSize: 12, color: MUTED, margin: 0, isTextBox: true});
-    s.addText(url, {x: x + 0.28, y: 5.06, w: cw - 0.56, h: 0.55, fontFace: MONO, fontSize: 10.5, color: ACCENT, margin: 0, isTextBox: true});
+    card(s, {x, y: 4.45, w: cw, h: 1.15});
+    s.addText(label, {x: x + 0.22, y: 4.58, w: cw - 0.44, h: 0.3, fontFace: BODY, fontSize: 12, color: MUTED, margin: 0, isTextBox: true});
+    s.addText(url, {x: x + 0.22, y: 4.9, w: cw - 0.44, h: 0.55, fontFace: MONO, fontSize: 10.5, color: ACCENT, margin: 0, isTextBox: true});
   });
+
+  card(s, {x: M, y: 5.75, w: CW, h: 0.6});
+  s.addText('Live site', {x: M + 0.22, y: 5.9, w: 1.8, h: 0.3, fontFace: BODY, fontSize: 12, color: MUTED, margin: 0, isTextBox: true, valign: 'middle'});
+  s.addText('https://agentx-interface-iota.vercel.app', {x: M + 2.1, y: 5.9, w: CW - 2.32, h: 0.3, fontFace: MONO, fontSize: 12, color: ACCENT, margin: 0, isTextBox: true, valign: 'middle'});
 
   s.addText('Monad Metropolis  ·  Track 4  ·  Live on Monad testnet, chain 10143', {
     x: M, y: 6.5, w: CW, h: 0.35, fontFace: BODY, fontSize: 11, color: MUTED, margin: 0, isTextBox: true,

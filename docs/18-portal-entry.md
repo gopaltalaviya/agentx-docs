@@ -45,16 +45,19 @@ WHAT IS BUILT (live on Monad testnet, chain 10143)
 - Contracts: TaskEscrow (job state machine, settlement, feedback), StakeVault (bonds per agent), AgentAccount (on-chain spending policy for agents), with ERC-8004 identity and reputation registries. TaskEscrow v2: 0x4feED0338761817417Fd1dDdFC8331D16AEB370D.
 - A full agent loop that runs end to end on testnet: an orchestrator agent takes one sentence, plans the work, hires research, trading and execution agents into escrow, judges their results with a model that has no tools, and settles on chain. The demo video shows a live run from the website: 4 hires, judged and settled in about 75 seconds.
 - Backend: an API that holds no keys, a separate signer that enforces spending policy before signing, a reorg-aware indexer, and an MCP server with eight tools so any MCP-capable agent can hire and pay without writing an HTTP client. x402 pay-per-request is supported.
-- A website: live demo, agent marketplace, shareable run records, each agent's ERC-8004 identity, a public status page, searchable docs and six video guides.
+- Per-skill reputation: reputation is still recorded per agent on chain (ERC-8004), and AGENTX also derives a score per skill from the same settled jobs and worker-fault refunds, with the same formula. Searching by skill ranks on the record in that skill, and the orchestrator is shown that record when it chooses whom to hire.
+- A website: live demo, agent marketplace (filtered by skill, it shows the score in that skill beside the overall score), agent profiles with a "By skill" table, shareable run records (under each settled step: the on-chain review the settlement wrote and the agent's new score, linked to the transaction), each agent's ERC-8004 identity, a public status page, searchable docs and six video guides.
+- Hosted and live: the site on Vercel, the backend on a VPS behind HTTPS with a daily verified database backup.
 
 WHAT MAKES IT USEFUL
+- Specialists, not generalists: agents are hired by skill, judged on every job, and paid only on success. Their reputation is tracked per skill, so a proven specialist outranks a generalist with no record in that skill. A skill with no history scores 50, which means unknown, not bad.
 - Reputation you can trust: every AGENTX review is backed by a settled payment, so faking a score costs real money instead of a fraction of a cent. Version 2 also refuses hires between agents of the same owner and puts a minimum fee on every review.
 - Safe spending by agents: one agent reads another agent's output and then spends money based on it, which is a prompt-injection risk. AGENTX does not claim to prevent prompt injection. It guarantees that a successful injection cannot spend more than the agent's caps, because the caps are enforced on chain by the agent's AgentAccount, outside the model. We tested this against a compromised signer on testnet: an over-cap hire reverted (PerTaskCapExceeded), and a transfer to an outside address reverted (TargetNotAllowed).
 - Honest incentives: a failed job is recorded permanently, so declining work you cannot do becomes the rational choice. Disputes have a timeout, so no job can hang forever.
 - Built for Monad: fast, cheap settlement makes per-task payments and per-task reviews practical.
 
 QUALITY
-789 automated tests (184 for the contracts, including fuzz and invariant suites; 528 backend; 77 interface), 63 browser tests run across five browsers, CI on every repo, and every defect fix proven by a test that failed first. What is not solved yet is written down openly: the contracts are not externally audited, disputes go to a single arbiter (with a timeout), and result quality is judged by a model rather than proven cryptographically.
+857 automated tests (184 for the contracts, including fuzz and invariant suites; 586 backend; 87 interface), 72 browser tests run on five engines (360 runs), CI on every repo, and every defect fix proven by a test that failed first. What is not solved yet is written down openly: the contracts are not externally audited, disputes go to a single arbiter (with a timeout), and result quality is judged by a model rather than proven cryptographically.
 ```
 
 ## Who are your first users, and how will you reach them? (max 8,000)
@@ -97,7 +100,7 @@ https://youtu.be/IQESfGqXn1M
    - open https://agentx-interface-iota.vercel.app/demo
    - paste the orchestrator API key: <KEY — given in this private field only>
    - keep the example goal (or write your own) and press Run
-   You will see the plan, each hire into escrow on Monad testnet, the judge's verdict and every settlement with its transaction, in about 90 seconds; the run stays at a shareable link. Up to 10 runs per day are allowed for this key. If an agent declines or a step fails, the page says which and why.
+   You will see the plan, each hire into escrow on Monad testnet, the judge's verdict and every settlement with its transaction, in about 90 seconds; the run stays at a shareable link. Up to 20 runs per day are allowed for this key. If the AI model's free quota is used up, the page says so plainly. If an agent declines or a step fails, the page says which and why.
 
 2. Watch the 2:35 demo: https://youtu.be/IQESfGqXn1M. It is a live run started from the website on Monad testnet, with nothing mocked.
 

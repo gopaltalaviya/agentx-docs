@@ -5,7 +5,7 @@ part of a Vercel or Railway build.
 
 ```
 agentx-contracts     Foundry only.        Deployed by:  you, manually
-agentx-backend       pnpm monorepo.       Deployed by:  Railway
+agentx-backend       pnpm monorepo.       Deployed by:  Docker Compose on one VPS, behind Caddy
 agentx-interface     Next.js only.        Deployed by:  Vercel
 agentx-docs          specification, deck, video, submission (this repo)
 ```
@@ -112,8 +112,9 @@ target per network that drifts apart.
 
 ## 2. `agentx-backend`
 
-pnpm monorepo. Meant to deploy to Railway (not yet provisioned). Contains the
-Postgres migrations and all long-running processes. There is no Redis.
+pnpm monorepo. Live since 2026-10-07 on one Vultr VPS (Docker Compose, Caddy
+for HTTPS) at `https://api.64-177-41-175.sslip.io`. Contains the Postgres
+migrations and all long-running processes. There is no Redis.
 
 ```
 agentx-backend/
@@ -138,6 +139,8 @@ agentx-backend/
 ├── PROGRESS.md       the running build log
 ├── scripts/          e2e, demo, keeper-sweep, verify-indexer, verify-keystore,
 │                     check-no-secrets
+├── deploy/vps/       the live deployment: compose override, Caddyfile, bootstrap, daily backup.sh
+├── deploy/railway/   per-service Railway configs (the earlier plan; not used)
 ├── docker-compose.yml        # local postgres :5442 only
 ├── pnpm-workspace.yaml
 ├── .env.example
@@ -148,6 +151,13 @@ agentx-backend/
 > 2026-09-25 the docs, the plan and the build log were in no repository at all;
 > they then went into this repo, and on 2026-10-06 the docs moved, history
 > included, to their own public repo. The plan and the build log stay here.
+
+**Live deployment:** every app runs as a container on one VPS, from
+`docker-compose.full.yml` plus `deploy/vps/docker-compose.vps.yml` (Postgres
+and the API publish no port; Caddy alone listens on 80/443; the signer stays
+on the private compose network, with no port). Steps: [docs/13 §5](13-deploy.md).
+The Railway layout below was the original plan; its configs are kept in the
+repo, but Railway is no longer used (its trial expired).
 
 Each app is a separate Railway service off the same repo, built from the one
 `Dockerfile` with a `SERVICE` build variable and a config file in
@@ -185,7 +195,8 @@ another Railway service at all.
 
 ## 3. `agentx-interface`
 
-Next.js 15. Meant to deploy to Vercel (not yet provisioned). It never signs a
+Next.js 15. Live on Vercel at `https://agentx-interface-iota.vercel.app`,
+auto-deployed from `master`. It never signs a
 protocol transaction and never holds a key beyond the visitor's own wallet
 connection. Its one chain write is the owner's ERC-8004 registration, signed
 in the browser; it then calls `POST /v1/agents` with the new id.
@@ -297,11 +308,11 @@ Nothing bespoke. If a tool has a documented default, we use it.
 | Commits | [Conventional Commits](https://www.conventionalcommits.org): `feat:`, `fix:`, `chore:`, `docs:`, `test:` |
 | Versioning | Semver, tagged `v0.1.0` |
 | TS config | `strict: true`, `noUncheckedIndexedAccess: true` |
-| Lint / format | Prettier defaults. **No ESLint** — the `lint` script was declared but no config or dependency ever existed, so it failed on every invocation. Removed rather than left as a script that lies. TypeScript strict, `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` carry the weight. |
+| Lint / format | Prettier defaults (`format:check` in CI). ESLint in backend and interface (`eslint.config.*`, `pnpm lint` in CI). An earlier `lint` script had no config behind it and was removed; the real one came later. TypeScript strict, `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` carry the weight. |
 | Solidity style | [Official Solidity style guide](https://docs.soliditylang.org/en/latest/style-guide.html), `forge fmt` |
 | NatSpec | Every external function on every contract |
 | Env | `.env.example` committed with empty values; `.env` gitignored everywhere |
-| CI | contracts: fmt, build, test, coverage, gas snapshot. backend: typecheck + secret scan always; the suite needs a Postgres service **and** the contracts checkout, and all repos are public, so `github.token` is enough. interface: typecheck + build. |
+| CI | GitHub Actions on `ubuntu-24.04`, actions on their Node 24 majors. contracts: fmt, build, test, coverage, gas snapshot. backend: typecheck, lint, format, secret scan always; the suite needs a Postgres service **and** the contracts checkout, and all repos are public, so `github.token` is enough. interface: typecheck, lint, format, unit tests, build, Playwright. |
 | PRs | **Not used.** 27 commits straight to `master` (named `main` until 2026-10-06). The commit messages carry the reasoning a PR description would. |
 | Changelog | **None.** No repo has one. `PROGRESS.md` is the real change log, and two logs disagree the moment one is forgotten. |
 
