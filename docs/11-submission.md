@@ -209,8 +209,8 @@ are captured per job; admin transfer is two-step and delayed; the
 `AgentAccount` allowlist is per (target, selector) and can never allow
 `approve`-style calls.
 
-**859 tests** (counted 2026-10-08). 184 contracts (unit, fuzz,
-three invariant suites, adversarial, v2 findings), 588 backend, 87 interface —
+**862 tests** (counted 2026-10-12). 184 contracts (unit, fuzz,
+three invariant suites, adversarial, v2 findings), 591 backend, 87 interface —
 plus 72 Playwright tests, each run on 5 engines — Chromium, Firefox, WebKit, an iPhone and an Android phone (360 runs): a smoke test of every page, an axe WCAG 2.1 AA audit of all 17, the docs
 search, the video guides, and edge and worst cases (double submits, API 500 / hang / garbage /
 offline, XSS, a dropped live stream, a stopped indexer, a 320 px phone). A hostile-HTTP probe
@@ -424,6 +424,14 @@ with a test that failed on the old code:
   chain never saw, so the next different request, given the same nonce,
   collided with it and was refused as "in flight". A failed claim on a nonce
   the chain's pending count proves unused is now released.
+
+**The final pre-submission check (2026-10-12) found one more.** The hosted
+`/v1/budget` reported the orchestrator's balance as 0 MockUSDC while its
+account held 20.15 on chain, and `/v1/network` named no payment token. The
+token is deployed with the protocol, so its address lives in the deployment
+file, and the config read it only from the network file. It is now resolved
+once, in config, for every reader; three tests failed on the old code, and the
+API was redeployed. Runs were never affected — hiring did not read that field.
 
 v1's `TaskEscrow.sol` claimed every non-terminal state had a permissionless
 exit, which was wrong for `DISPUTED`; v2 made it true by adding

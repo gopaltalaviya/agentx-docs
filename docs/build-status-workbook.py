@@ -341,7 +341,7 @@ rows(
         ("TaskEscrow (v2)", "0x4feED0338761817417Fd1dDdFC8331D16AEB370D"),
         ("Live site", "https://agentx-interface-iota.vercel.app (Vercel, deploys from master)"),
         ("Live API", "https://api.64-177-41-175.sslip.io (Vultr VPS behind Caddy; daily database backup)"),
-        ("Tests", "859 unit/integration (184 contracts, 588 backend, 87 interface) + 72 browser tests on 5 engines (360 runs)"),
+        ("Tests", "862 unit/integration (184 contracts, 591 backend, 87 interface) + 72 browser tests on 5 engines (360 runs)"),
         ("Repos", "agentx-contracts, agentx-backend, agentx-interface, agentx-docs — public, branch master"),
         (
             "Formulas",

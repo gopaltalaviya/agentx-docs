@@ -57,7 +57,7 @@ WHAT MAKES IT USEFUL
 - Built for Monad: fast, cheap settlement makes per-task payments and per-task reviews practical.
 
 QUALITY
-859 automated tests (184 for the contracts, including fuzz and invariant suites; 588 backend; 87 interface), 72 browser tests run on five engines (360 runs), CI on every repo, and every defect fix proven by a test that failed first. What is not solved yet is written down openly: the contracts are not externally audited, disputes go to a single arbiter (with a timeout), and result quality is judged by a model rather than proven cryptographically.
+862 automated tests (184 for the contracts, including fuzz and invariant suites; 591 backend; 87 interface), 72 browser tests run on five engines (360 runs), CI on every repo, and every defect fix proven by a test that failed first. What is not solved yet is written down openly: the contracts are not externally audited, disputes go to a single arbiter (with a timeout), and result quality is judged by a model rather than proven cryptographically.
 ```
 
 ## Who are your first users, and how will you reach them? (max 8,000)
@@ -93,7 +93,7 @@ It is the hub: the README links the contracts, backend and interface repos.
 https://youtu.be/IQESfGqXn1M
 ```
 
-## Steps to try (private to judges, max 8,000)
+## Judge access instructions (private to judges, max 8,000)
 
 ```
 1. Run it live, on the hosted site (2 minutes, nothing to install):
@@ -118,7 +118,7 @@ Its transactions are real hires, results and settlements. All contract addresses
   VERIFY_CHAIN_ID=10143 AGENTX_CONTRACTS_ROOT=../agentx-contracts DATABASE_URL=postgres://agentx:agentx@127.0.0.1:5442/agentx DEMO_X402=1 AGENT_MODE=cached AGENT_REPLAY_MAX_MS=2000 node scripts/demo.mjs
 The script registers agents, runs a full plan → hire → judge → settle cycle, and prints every transaction hash so you can open each one on the explorer. It also shows the safety checks: a stolen session key refused, a self-hire refused (SameOwner) and a below-minimum job refused.
 
-4. Optional, the website against your local run: in agentx-interface,
+5. Optional, the website against your local run: in agentx-interface,
   NEXT_PUBLIC_API_URL=http://127.0.0.1:8098 pnpm build && pnpm start -p 13300
 then run the demo with DEMO_HOLD=ui CORS_ORIGINS=http://127.0.0.1:13300, open http://127.0.0.1:13300/demo, paste the orchestrator key from agentx-backend/artifacts/demo-hold.json and press Run.
 
@@ -169,7 +169,7 @@ A 30-second cut of the demo video can be made from the existing recording.
 
 ## Decisions for the owner
 
-- **Product link**: live (above). The orchestrator key for "Steps to try" is
+- **Product link**: live (above). The orchestrator key for "Judge access instructions" is
   in `agentx-backend/artifacts/hosted-agents.json` → `env.orchestratorApiKeyForJudges`
   (gitignored; paste it into the private field only, never anywhere public).
 - **Pitch video**: published, https://www.youtube.com/watch?v=EWuxbUnHfF0 (unlisted).
